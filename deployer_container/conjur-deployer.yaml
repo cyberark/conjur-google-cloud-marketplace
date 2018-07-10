@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ NAME }}-deployer
+spec:
+  template:
+    metadata:
+      name: {{ NAME }}-deployer
+    spec:
+      #serviceAccountName: {{ NAME }}-deployer-sa
+      containers:
+      - name: {{ NAME }}-deployer
+        image: {{ DEPLOYER-IMAGE }}
+        #volumeMounts:
+        #- name: config-volume
+        #  mountPath: /data/values
+      #volumes:
+      #- name: config-volume
+      #  configMap:
+      #    name: {{ NAME }}-deployer-config
+      restartPolicy: Never
