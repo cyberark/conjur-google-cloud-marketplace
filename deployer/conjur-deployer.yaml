@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: conjur-deployer
+spec:
+  template:
+    metadata:
+      name: conjur-deployer
+    spec:
+      serviceAccountName: conjur-deployer-sa
+      containers:
+      - name: conjur-deployer
+        image: us.gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-deployer
+        volumeMounts:
+        - name: config-volume
+          mountPath: /data/values
+      volumes:
+      - name: config-volume
+        configMap:
+          name: conjur-deployer-config
+      restartPolicy: Never

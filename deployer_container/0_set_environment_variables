@@ -1,7 +1,0 @@
-#!/bin/bash
-
-export NAME=conjur
-export DEPLOYER_SERVICEACCOUNT_NAME=$NAME-deployer-sa
-export DEPLOYER_IMAGE_NAME=$NAME-deployer
-export DEPLOYER_CONFIGMAP_NAME=$NAME-deployer-configmap
-export NAMESPACE=default
