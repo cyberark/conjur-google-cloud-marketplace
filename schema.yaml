@@ -17,6 +17,10 @@ properties:
     default: postgres:10.1
     x-google-marketplace:
       type: IMAGE
+  imageTester:
+    type: string
+    x-google-marketplace:
+      type: IMAGE
   conjurDataKey:
     type: string
     x-google-marketplace:

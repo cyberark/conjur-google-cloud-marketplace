@@ -50,3 +50,14 @@ From the repo root folder, run the following commands:
 ```sh-session
 $ make clean; make .build/conjur/conjur
 ```
+
+## Testing
+
+To test the installer, run:
+
+```sh
+$ source setenv.sh
+$ make app/verify
+```
+
+This will launch the application in a custom namespace, test it, and then delete the namespace.
