@@ -46,6 +46,6 @@ The project URL is: https://console.cloud.google.com/home/dashboard?organization
 From the repo root folder, run the following commands:
 
 ```
-$ docker build . -t conjur-deployer:latest -f Dockerfile.deployer
+$ docker build . -t us.gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-deployer:latest -f Dockerfile.deployer
 $ docker push us.gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-deployer:latest
 ```
