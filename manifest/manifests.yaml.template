@@ -30,6 +30,7 @@ metadata:
   name: conjur
   labels:
     app: conjur
+    app.kubernetes.io/name: conjur
 spec:
   ports:
   - port: 80
@@ -43,6 +44,7 @@ kind: Deployment
 metadata:
   labels:
     app: conjur
+    app.kubernetes.io/name: conjur
   name: conjur
 spec:
   replicas: 1
