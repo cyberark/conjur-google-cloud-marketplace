@@ -24,7 +24,15 @@ The project URL is: https://console.cloud.google.com/home/dashboard?organization
     
 ## Cluster Setup
 
-1. In the marketplace-k8s-app-tools, run the following command to create the Application CRD: `$ make crd/install -f crd.Makefile`
+0. Set environment variables with `source setenv.sh`.
+
+1. Run the following command to create the Application CRD: `$ make crd/install`.
+
+2. Run the following to create the app: `$ make app/install`.
+
+3. Run the following to watch the app: `$ make app/watch`.
+
+4. Run the following to uninstall the app: `$ make app/uninstall`.
 
 ## Pushing a New Container Image
 1. Install the gcloud SDK on your local machine: https://cloud.google.com/sdk/docs/
@@ -32,20 +40,13 @@ The project URL is: https://console.cloud.google.com/home/dashboard?organization
 
     `$ gcloud auth configure-docker`
 
-3. Tag the image: `$ docker tag _image_name_ gcr.io/[PROJECT-ID]/image_name:tag`
-    
-    Example: `$ docker tag conjur-deployer gcr.io/conjur-cloud-launcher-onboard/conjur-deployer:latest`
-
-4. Push the image: `$ docker push gcr.io/[PROJECT-ID]/_image_name_:tag`
-    
-    Example: `$ docker push gcr.io/conjur-cloud-launcher-onboard/conjur-deployer:latest`
+3. Tag and push the imge: `$ make clean; make .build/conjur/conjur
 
 [docker-gcloud-auth]: https://cloud.google.com/container-registry/docs/quickstart#add_the_image_to_product_name_short
 
 ## Updating the Conjur Deployer Container Image
 From the repo root folder, run the following commands:
 
-```
-$ docker build . -t us.gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-deployer:latest -f Dockerfile.deployer
-$ docker push us.gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-deployer:latest
+```sh-session
+$ make clean; make .build/conjur/conjur
 ```

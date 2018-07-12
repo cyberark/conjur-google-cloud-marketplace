@@ -5,4 +5,4 @@ metadata:
 data:
   name: conjur
   namespace: default
-  image: gcr.io/conjur-cloud-launcher-onboard/conjur-deployer:latest
+  imageConjur: gcr.io/conjur-cloud-launcher-onboard/conjur-deployer:latest

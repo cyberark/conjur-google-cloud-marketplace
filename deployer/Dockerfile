@@ -24,6 +24,9 @@ COPY marketplace-k8s-app-tools/marketplace/deployer_util/* /bin/
 
 RUN mkdir -p /data/manifest
 
-COPY deployer_container/schema.yaml /data
+COPY manifest /data/manifest
+COPY apptest/deployer /data-test/
+
+COPY schema.yaml /data
 
 ENTRYPOINT ["/bin/bash", "/bin/deploy.sh"]

@@ -1,0 +1,42 @@
+properties:
+  name:
+    type: string
+    x-google-marketplace:
+      type: NAME
+  namespace:
+    type: string
+    x-google-marketplace:
+      type: NAMESPACE
+  imageConjur:
+    type: string
+    default: gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur:latest
+    x-google-marketplace:
+      type: IMAGE
+  conjurDataKey:
+    type: string
+    x-google-marketplace:
+      type: GENERATED_PASSWORD
+      generatedPassword:
+        length: 16
+  conjurDatabaseUrl:
+    type: string
+    title: PostgreSQL connection
+    description: PostgreSQL connection string for Conjur
+    default: postgres://postgres@postgres/postgres
+  imageUbbagent:
+    type: string
+    default: $REGISTRY/cyberark/ubbagent:$TAG
+    x-google-marketplace:
+      type: IMAGE
+  reportingSecret:
+    type: string
+    x-google-marketplace:
+      type: REPORTING_SECRET
+required:
+- name
+- namespace
+- imageConjur
+- conjurDataKey
+- conjurDatabaseUrl
+- imageUbbagent
+- reportingSecret

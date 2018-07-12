@@ -1,0 +1,45 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: conjur
+  labels:
+    app: conjur
+spec:
+  ports:
+  - port: 80
+    name: http
+  selector:
+    app: conjur
+  type: LoadBalancer
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: conjur
+  name: conjur
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: conjur
+  template:
+    metadata:
+      labels:
+        app: conjur
+        name: conjur
+    spec:
+      containers:
+      - name: conjur
+        image: $imageConjur
+        imagePullPolicy: Always
+        args: ["server"]
+        ports:
+        - containerPort: 80
+          name: http
+        env:
+          - name: DATABASE_URL
+            value: $conjurDatabaseUrl
+          - name: CONJUR_DATA_KEY
+            value: $conjurDataKey
