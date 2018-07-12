@@ -12,6 +12,11 @@ properties:
     default: gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur:latest
     x-google-marketplace:
       type: IMAGE
+  imagePostgres:
+    type: string
+    default: postgres:10.1
+    x-google-marketplace:
+      type: IMAGE
   conjurDataKey:
     type: string
     x-google-marketplace:
