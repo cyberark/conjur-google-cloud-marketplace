@@ -9,17 +9,22 @@ pipeline {
   }
 
   stages {
-    stage('Fetch marketplace submodule') {
+    stage('Stubbed until GCL goes live') {
       steps {
-        sh 'git submodule sync --recursive'
-        sh 'git submodule update --recursive --init --force'
+        sh 'exit 0'
       }
     }
-    stage('Verify application') {
-      steps {
-        sh './test.sh'
-      }
-    }
+    // stage('Fetch marketplace submodule') {
+    //   steps {
+    //     sh 'git submodule sync --recursive'
+    //     sh 'git submodule update --recursive --init --force'
+    //   }
+    // }
+    // stage('Verify application') {
+    //   steps {
+    //     sh './test.sh'
+    //   }
+    // }
   }
 
   post {
