@@ -28,8 +28,8 @@ NAME ?= conjur-1
 APP_PARAMETERS ?= { \
   "name": "$(NAME)", \
   "namespace": "$(NAMESPACE)", \
-  "imageConjur": "$(REGISTRY)/cyberark/conjur:$(TAG)", \
-  "imageUbbagent": "$(REGISTRY)/cyberark/ubbagent:$(TAG)", \
+  "imageConjur": "$(REGISTRY)/cyberark:$(TAG)", \
+  "imageUbbagent": "$(REGISTRY)/ubbagent:$(TAG)", \
   "reportingSecret": "$(NAME)-reporting-secret" \
 }
 TESTER_IMAGE ?= $(REGISTRY)/cyberark/conjur-tester:$(TAG)
@@ -82,8 +82,8 @@ app/build:: .build/conjur/deployer \
                             | .build/conjur
 	$(call print_target, $@)
 	docker pull cyberark/conjur
-	docker tag cyberark/conjur "$(REGISTRY)/cyberark/conjur:$(TAG)"
-	docker push "$(REGISTRY)/cyberark/conjur:$(TAG)"
+	docker tag cyberark/conjur "$(REGISTRY)/cyberark:$(TAG)"
+	docker push "$(REGISTRY)/cyberark:$(TAG)"
 	@touch "$@"
 
 # Relocate ubbagent image to $REGISTRY.
@@ -92,6 +92,6 @@ app/build:: .build/conjur/deployer \
                            .build/var/TAG \
                            | .build/conjur
 	$(call print_target, $@)
-	docker tag "gcr.io/cloud-marketplace-tools/ubbagent" "$(REGISTRY)/cyberark/ubbagent:$(TAG)"
-	docker push "$(REGISTRY)/cyberark/ubbagent:$(TAG)"
+	docker tag "gcr.io/cloud-marketplace-tools/ubbagent" "$(REGISTRY)/ubbagent:$(TAG)"
+	docker push "$(REGISTRY)/ubbagent:$(TAG)"
 	@touch "$@"

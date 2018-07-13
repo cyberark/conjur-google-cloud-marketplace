@@ -10,7 +10,7 @@ properties:
       type: NAMESPACE
   imageConjur:
     type: string
-    default: cyberark/conjur
+    default: us.gcr.io/conjur-cloud-launcher-onboard/cyberark
     x-google-marketplace:
       type: IMAGE
   imagePostgres:
@@ -37,7 +37,7 @@ properties:
       type: IMAGE
   imageUbbagent:
     type: string
-    default: $REGISTRY/cyberark/ubbagent:$TAG
+    default: $REGISTRY/ubbagent:$TAG
     x-google-marketplace:
       type: IMAGE
   reportingSecret:
