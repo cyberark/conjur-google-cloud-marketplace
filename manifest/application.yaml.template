@@ -34,6 +34,8 @@ spec:
   - group: v1
     kind: Secret
   - group: v1
+    kind: Secret
+  - group: v1
     kind: Service
   notes: |-
     # TODO add usage notes here, if anything has to be done afterwards

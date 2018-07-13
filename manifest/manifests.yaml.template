@@ -25,6 +25,28 @@ spec:
         name: postgres
 ---
 apiVersion: v1
+kind: Secret
+metadata:
+  name: conjur-data-key
+  labels:
+    app.kubernetes.io/name: conjur
+    app.kubernetes.io/component: data-secret
+type: Opaque
+data:
+  key: "$conjurDataKey"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: conjur-database-url
+  labels:
+    app.kubernetes.io/name: conjur
+    app.kubernetes.io/component: data-secret
+type: Opaque
+data:
+  key: "$conjurDatabaseUrl"
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: conjur
@@ -66,7 +88,13 @@ spec:
         - containerPort: 80
           name: http
         env:
-          - name: DATABASE_URL
-            value: $conjurDatabaseUrl
-          - name: CONJUR_DATA_KEY
-            value: $conjurDataKey
+        - name: CONJUR_DATA_KEY
+          valueFrom:
+            secretKeyRef:
+              name: conjur-data-key
+              key: key
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: conjur-database-url
+              key: key
