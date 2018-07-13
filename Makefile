@@ -23,7 +23,7 @@ include ./marketplace-k8s-app-tools/var.Makefile
 # It requires several APP_* variables defined as followed.
 include ./marketplace-k8s-app-tools/app.Makefile
 
-APP_DEPLOYER_IMAGE ?= $(REGISTRY)/deployer:1.0
+APP_DEPLOYER_IMAGE ?= $(REGISTRY)/cyberark/deployer:1.0
 NAME ?= conjur-1
 APP_PARAMETERS ?= { \
   "name": "$(NAME)", \
@@ -59,7 +59,7 @@ app/build:: .build/conjur/deployer \
 												| .build/conjur
 	$(call print_target, $@)
 	docker build \
-	    --build-arg REGISTRY="$(REGISTRY)/deployer" \
+	    --build-arg REGISTRY="$(REGISTRY)/cyberark/deployer" \
 	    --build-arg TAG="$(TAG)" \
 	    --tag "$(APP_DEPLOYER_IMAGE)" \
 	    -f deployer/Dockerfile \
