@@ -21,7 +21,7 @@ spec:
     [GitHub](https://github.com/cyberark/conjur/issues).
   maintainers:
   - name: CyberArk
-    url: https://www.cyberark.com/
+    url: https://www.cyberark.com
   links:
   - description: Getting Started
     url: https://www.conjur.org/get-started/
