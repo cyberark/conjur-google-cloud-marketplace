@@ -28,11 +28,13 @@ The project URL is: https://console.cloud.google.com/home/dashboard?organization
 
 1. Run the following command to create the Application CRD: `$ make crd/install`.
 
-2. Run the following to create the app: `$ make app/install`.
+2. Create the namespace from `setenv.sh`: `kubectl create ns "$(whoami)"`
 
-3. Run the following to watch the app: `$ make app/watch`.
+3. Run the following to create the app: `$ make app/install`.
 
-4. Run the following to uninstall the app: `$ make app/uninstall`.
+4. Run the following to watch the app: `$ make app/watch`.
+
+5. Run the following to uninstall the app: `$ make app/uninstall`.
 
 ## Pushing a New Container Image
 1. Install the gcloud SDK on your local machine: https://cloud.google.com/sdk/docs/
