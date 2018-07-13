@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: conjur-deployer-config
-data:
-  name: conjur
-  namespace: default
-  imageConjur: gcr.io/conjur-cloud-launcher-onboard/conjur-deployer:latest
