@@ -9,7 +9,7 @@ properties:
       type: NAMESPACE
   imageConjur:
     type: string
-    default: gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur:latest
+    default: cyberark/conjur
     x-google-marketplace:
       type: IMAGE
   imagePostgres:
