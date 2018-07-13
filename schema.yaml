@@ -1,3 +1,4 @@
+application_api_version: v1beta1
 properties:
   name:
     type: string
@@ -17,12 +18,10 @@ properties:
     default: postgres:10.1
     x-google-marketplace:
       type: IMAGE
-  imageTester:
-    type: string
-    x-google-marketplace:
-      type: IMAGE
   conjurDataKey:
     type: string
+    title: Conjur Data key
+    description: Encryption key for Conjur database.
     x-google-marketplace:
       type: GENERATED_PASSWORD
       generatedPassword:
@@ -32,6 +31,10 @@ properties:
     title: PostgreSQL connection
     description: PostgreSQL connection string for Conjur. This string must be base64-encoded.
     default: 'cG9zdGdyZXM6Ly9wb3N0Z3Jlc0Bwb3N0Z3Jlcy9wb3N0Z3Jlcw=='  # postgres://postgres@postgres/postgres.
+  imageTester:
+    type: string
+    x-google-marketplace:
+      type: IMAGE
   imageUbbagent:
     type: string
     default: $REGISTRY/cyberark/ubbagent:$TAG
