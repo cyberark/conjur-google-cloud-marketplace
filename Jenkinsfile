@@ -11,7 +11,7 @@ pipeline {
   stages {
     stage('Verify application') {
       steps {
-        sh 'exit 0'
+        sh './test.sh'
       }
     }
   }
