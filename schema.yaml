@@ -1,0 +1,54 @@
+application_api_version: v1beta1
+properties:
+  name:
+    type: string
+    x-google-marketplace:
+      type: NAME
+  namespace:
+    type: string
+    x-google-marketplace:
+      type: NAMESPACE
+  imageConjur:
+    type: string
+    default: cyberark/conjur
+    x-google-marketplace:
+      type: IMAGE
+  imagePostgres:
+    type: string
+    default: postgres:10.1
+    x-google-marketplace:
+      type: IMAGE
+  conjurDataKey:
+    type: string
+    title: Conjur Data key
+    description: Encryption key for Conjur database.
+    x-google-marketplace:
+      type: GENERATED_PASSWORD
+      generatedPassword:
+        length: 16
+  conjurDatabaseUrl:
+    type: string
+    title: PostgreSQL connection
+    description: PostgreSQL connection string for Conjur. This string must be base64-encoded.
+    default: 'cG9zdGdyZXM6Ly9wb3N0Z3Jlc0Bwb3N0Z3Jlcy9wb3N0Z3Jlcw=='  # postgres://postgres@postgres/postgres.
+  imageTester:
+    type: string
+    x-google-marketplace:
+      type: IMAGE
+  imageUbbagent:
+    type: string
+    default: $REGISTRY/cyberark/ubbagent:$TAG
+    x-google-marketplace:
+      type: IMAGE
+  reportingSecret:
+    type: string
+    x-google-marketplace:
+      type: REPORTING_SECRET
+required:
+- name
+- namespace
+- imageConjur
+- conjurDataKey
+- conjurDatabaseUrl
+- imageUbbagent
+- reportingSecret
