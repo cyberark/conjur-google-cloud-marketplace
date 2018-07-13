@@ -34,7 +34,18 @@ The project URL is: https://console.cloud.google.com/home/dashboard?organization
 
 4. Run the following to watch the app: `$ make app/watch`.
 
-5. Run the following to uninstall the app: `$ make app/uninstall`.
+5. Once the app is ready, find the external IP for Conjur and open it in your browser
+    to view Conjur's status page:
+
+    ```sh-session
+    $ kubectl get svc
+    NAME       TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)        AGE
+    conjur     LoadBalancer   10.55.254.167   35.237.110.166   80:30360/TCP   1m
+
+    $ open http://35.237.110.166
+    ```
+
+6. Run the following to uninstall the app: `$ make app/uninstall`.
 
 ## Pushing a New Container Image
 1. Install the gcloud SDK on your local machine: https://cloud.google.com/sdk/docs/

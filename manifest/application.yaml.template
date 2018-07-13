@@ -12,7 +12,7 @@ metadata:
     app.kubernetes.io/name: "$name"
 spec:
   type: Conjur
-  version: '0.1'
+  version: '1.0.0'
   description: |-
     CyberArk Conjur automatically secures secrets used by privileged users and machine identities.
 
