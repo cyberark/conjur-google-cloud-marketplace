@@ -15,7 +15,7 @@ properties:
       type: IMAGE
   imagePostgres:
     type: string
-    default: $REGISTRY/postgres:10.1
+    default: $REGISTRY/cyberark/postgres:$TAG
     x-google-marketplace:
       type: IMAGE
   conjurDataKey:

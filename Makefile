@@ -23,14 +23,20 @@ include ./marketplace-k8s-app-tools/var.Makefile
 # It requires several APP_* variables defined as followed.
 include ./marketplace-k8s-app-tools/app.Makefile
 
-APP_DEPLOYER_IMAGE ?= $(REGISTRY)/cyberark/deployer:$(TAG)
-POSTGRES_IMAGE ?= postgres:10.1
-NAME ?= conjur-1
+NAME ?= conjur
+
+PREFIX ?= cyberark
+APP_DEPLOYER_IMAGE ?= $(REGISTRY)/$(PREFIX)/deployer:$(TAG)
+CONJUR_IMAGE ?= $(REGISTRY)/$(PREFIX):$(TAG)
+POSTGRES_SOURCE_IMAGE ?= postgres:10.1
+POSTGRES_IMAGE ?= $(REGISTRY)/$(PREFIX)/postgres:$(TAG)
+UBBAGENT_IMAGE ?= $(REGISTRY)/ubbagent:$(TAG)
+
 APP_PARAMETERS ?= { \
   "name": "$(NAME)", \
   "namespace": "$(NAMESPACE)", \
-  "imageConjur": "$(REGISTRY)/cyberark:$(TAG)", \
-  "imageUbbagent": "$(REGISTRY)/ubbagent:$(TAG)", \
+  "imageConjur": "$(CONJUR_IMAGE)", \
+  "imageUbbagent": "$(UBBAGENT_IMAGE)", \
   "reportingSecret": "$(NAME)-reporting-secret" \
 }
 TESTER_IMAGE ?= $(REGISTRY)/tester:$(TAG)
@@ -84,17 +90,17 @@ app/build:: .build/conjur/deployer \
                             | .build/conjur
 	$(call print_target, $@)
 	docker pull cyberark/conjur
-	docker tag cyberark/conjur "$(REGISTRY)/cyberark:$(TAG)"
-	docker push "$(REGISTRY)/cyberark:$(TAG)"
+	docker tag cyberark/conjur "$(CONJUR_IMAGE)"
+	docker push "$(CONJUR_IMAGE)"
 	@touch "$@"
 
 # Relocate postgres image to $REGISTRY
 .build/conjur/postgres: .build/var/REGISTRY \
 												| .build/conjur
 	$(call print_target, $@)
-	docker pull "$(POSTGRES_IMAGE)"
-	docker tag "$(POSTGRES_IMAGE)" "$(REGISTRY)/$(POSTGRES_IMAGE)"
-	docker push "$(REGISTRY)/$(POSTGRES_IMAGE)"
+	docker pull $(POSTGRES_SOURCE_IMAGE)
+	docker tag "$(POSTGRES_SOURCE_IMAGE)" "$(POSTGRES_IMAGE)"
+	docker push "$(POSTGRES_IMAGE)"
 	@touch "$@"
 
 # Relocate ubbagent image to $REGISTRY.
