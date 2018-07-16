@@ -1,5 +1,5 @@
 ---
-apiVersion: app.k8s.io/v1alpha1
+apiVersion: app.k8s.io/v1beta1
 kind: Application
 metadata:
   name: "$name"
@@ -11,20 +11,21 @@ metadata:
   labels:
     app.kubernetes.io/name: "$name"
 spec:
-  type: Conjur
-  version: '1.0.0'
-  description: |-
-    CyberArk Conjur automatically secures secrets used by privileged users and machine identities.
+  descriptor:
+    type: Conjur
+    version: '1.0.0'
+    description: |-
+      CyberArk Conjur automatically secures secrets used by privileged users and machine identities.
 
-    # Support
-    Community support is available on
-    [GitHub](https://github.com/cyberark/conjur/issues).
-  maintainers:
-  - name: CyberArk
-    url: https://www.cyberark.com
-  links:
-  - description: Getting Started
-    url: https://www.conjur.org/get-started/
+      # Support
+      Community support is available on
+      [GitHub](https://github.com/cyberark/conjur/issues).
+    maintainers:
+    - name: CyberArk
+      url: https://www.cyberark.com
+    links:
+    - description: Getting Started
+      url: https://www.conjur.org/get-started/
   selector:
     matchLabels:
       app.kubernetes.io/name: "$name"
