@@ -10,12 +10,12 @@ properties:
       type: NAMESPACE
   imageConjur:
     type: string
-    default: us.gcr.io/conjur-cloud-launcher-onboard/cyberark
+    default: $REGISTRY/cyberark:$TAG
     x-google-marketplace:
       type: IMAGE
   imagePostgres:
     type: string
-    default: postgres:10.1
+    default: $REGISTRY/postgres:10.1
     x-google-marketplace:
       type: IMAGE
   conjurDataKey:
@@ -33,6 +33,7 @@ properties:
     default: 'cG9zdGdyZXM6Ly9wb3N0Z3Jlc0Bwb3N0Z3Jlcy9wb3N0Z3Jlcw=='  # postgres://postgres@postgres/postgres.
   imageTester:
     type: string
+    default: $REGISTRY/tester:$TAG
     x-google-marketplace:
       type: IMAGE
   imageUbbagent:

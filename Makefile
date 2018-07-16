@@ -1,4 +1,4 @@
-TAG ?= latest
+TAG ?= 1.0
 
 # crd.Makefile provides targets to install Application CRD.
 include ./marketplace-k8s-app-tools/crd.Makefile
@@ -23,7 +23,8 @@ include ./marketplace-k8s-app-tools/var.Makefile
 # It requires several APP_* variables defined as followed.
 include ./marketplace-k8s-app-tools/app.Makefile
 
-APP_DEPLOYER_IMAGE ?= $(REGISTRY)/cyberark/deployer:1.0
+APP_DEPLOYER_IMAGE ?= $(REGISTRY)/cyberark/deployer:$(TAG)
+POSTGRES_IMAGE ?= postgres:10.1
 NAME ?= conjur-1
 APP_PARAMETERS ?= { \
   "name": "$(NAME)", \
@@ -32,7 +33,7 @@ APP_PARAMETERS ?= { \
   "imageUbbagent": "$(REGISTRY)/ubbagent:$(TAG)", \
   "reportingSecret": "$(NAME)-reporting-secret" \
 }
-TESTER_IMAGE ?= $(REGISTRY)/cyberark/conjur-tester:$(TAG)
+TESTER_IMAGE ?= $(REGISTRY)/tester:$(TAG)
 APP_TEST_PARAMETERS ?= { \
   "imageTester": "$(TESTER_IMAGE)" \
 }
@@ -40,9 +41,10 @@ APP_TEST_PARAMETERS ?= { \
 # Extend the target as defined in app.Makefile to
 # include real dependencies.
 app/build:: .build/conjur/deployer \
-            .build/conjur/tester \
-            .build/conjur/conjur
-
+            .build/conjur/conjur \
+						.build/conjur/postgres \
+						.build/conjur/tester \
+						.build/conjur/ubbagent
 
 .build/conjur: | .build
 	mkdir -p "$@"
@@ -59,7 +61,7 @@ app/build:: .build/conjur/deployer \
 												| .build/conjur
 	$(call print_target, $@)
 	docker build \
-	    --build-arg REGISTRY="$(REGISTRY)/cyberark/deployer" \
+	    --build-arg REGISTRY="$(REGISTRY)" \
 	    --build-arg TAG="$(TAG)" \
 	    --tag "$(APP_DEPLOYER_IMAGE)" \
 	    -f deployer/Dockerfile \
@@ -84,6 +86,15 @@ app/build:: .build/conjur/deployer \
 	docker pull cyberark/conjur
 	docker tag cyberark/conjur "$(REGISTRY)/cyberark:$(TAG)"
 	docker push "$(REGISTRY)/cyberark:$(TAG)"
+	@touch "$@"
+
+# Relocate postgres image to $REGISTRY
+.build/conjur/postgres: .build/var/REGISTRY \
+												| .build/conjur
+	$(call print_target, $@)
+	docker pull "$(POSTGRES_IMAGE)"
+	docker tag "$(POSTGRES_IMAGE)" "$(REGISTRY)/$(POSTGRES_IMAGE)"
+	docker push "$(REGISTRY)/$(POSTGRES_IMAGE)"
 	@touch "$@"
 
 # Relocate ubbagent image to $REGISTRY.
