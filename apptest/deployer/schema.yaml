@@ -1,3 +1,5 @@
 properties:
   imageTester:
     type: string
+    x-google-marketplace:
+      type: IMAGE

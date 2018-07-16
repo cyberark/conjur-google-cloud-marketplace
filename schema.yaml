@@ -31,11 +31,6 @@ properties:
     title: PostgreSQL connection
     description: PostgreSQL connection string for Conjur. This string must be base64-encoded.
     default: 'cG9zdGdyZXM6Ly9wb3N0Z3Jlc0Bwb3N0Z3Jlcy9wb3N0Z3Jlcw=='  # postgres://postgres@postgres/postgres.
-  imageTester:
-    type: string
-    default: $REGISTRY/tester:$TAG
-    x-google-marketplace:
-      type: IMAGE
   imageUbbagent:
     type: string
     default: $REGISTRY/ubbagent:$TAG
