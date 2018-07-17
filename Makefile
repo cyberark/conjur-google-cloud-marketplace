@@ -30,7 +30,7 @@ APP_DEPLOYER_IMAGE ?= $(REGISTRY)/$(PREFIX)/deployer:$(TAG)
 CONJUR_IMAGE ?= $(REGISTRY)/$(PREFIX):$(TAG)
 POSTGRES_SOURCE_IMAGE ?= postgres:10.1
 POSTGRES_IMAGE ?= $(REGISTRY)/$(PREFIX)/postgres:$(TAG)
-UBBAGENT_IMAGE ?= $(REGISTRY)/ubbagent:$(TAG)
+UBBAGENT_IMAGE ?= $(REGISTRY)/$(PREFIX)/ubbagent:$(TAG)
 
 APP_PARAMETERS ?= { \
   "name": "$(NAME)", \
@@ -109,6 +109,6 @@ app/build:: .build/conjur/deployer \
                            .build/var/TAG \
                            | .build/conjur
 	$(call print_target, $@)
-	docker tag "gcr.io/cloud-marketplace-tools/ubbagent" "$(REGISTRY)/ubbagent:$(TAG)"
-	docker push "$(REGISTRY)/ubbagent:$(TAG)"
+	docker tag "gcr.io/cloud-marketplace-tools/ubbagent" "$(REGISTRY)/$(PREFIX)/ubbagent:$(TAG)"
+	docker push "$(REGISTRY)/$(PREFIX)/ubbagent:$(TAG)"
 	@touch "$@"

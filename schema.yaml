@@ -33,7 +33,7 @@ properties:
     default: 'cG9zdGdyZXM6Ly9wb3N0Z3Jlc0Bwb3N0Z3Jlcy9wb3N0Z3Jlcw=='  # postgres://postgres@postgres/postgres.
   imageUbbagent:
     type: string
-    default: $REGISTRY/ubbagent:$TAG
+    default: $REGISTRY/cyberark/ubbagent:$TAG
     x-google-marketplace:
       type: IMAGE
   reportingSecret:
