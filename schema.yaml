@@ -31,14 +31,9 @@ properties:
     title: PostgreSQL connection
     description: PostgreSQL connection string for Conjur. This string must be base64-encoded.
     default: 'cG9zdGdyZXM6Ly9wb3N0Z3Jlc0Bwb3N0Z3Jlcy9wb3N0Z3Jlcw=='  # postgres://postgres@postgres/postgres.
-  reportingSecret:
-    type: string
-    x-google-marketplace:
-      type: REPORTING_SECRET
 required:
 - name
 - namespace
 - imageConjur
 - conjurDataKey
 - conjurDatabaseUrl
-- reportingSecret

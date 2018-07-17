@@ -34,7 +34,6 @@ APP_PARAMETERS ?= { \
   "name": "$(NAME)", \
   "namespace": "$(NAMESPACE)", \
   "imageConjur": "$(CONJUR_IMAGE)", \
-  "reportingSecret": "$(NAME)-reporting-secret" \
 }
 TESTER_IMAGE ?= $(REGISTRY)/$(PREFIX)/tester:$(TAG)
 APP_TEST_PARAMETERS ?= { \
