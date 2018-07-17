@@ -15,7 +15,6 @@ include ./marketplace-k8s-app-tools/marketplace.Makefile
 
 # ubbagent.Makefile provides ".build/ubbagent/ubbagent"
 # target to build the ubbagent image locally.
-include ./marketplace-k8s-app-tools/ubbagent.Makefile
 include ./marketplace-k8s-app-tools/var.Makefile
 
 # app.Makefile provides the main targets for installing the
@@ -30,16 +29,14 @@ APP_DEPLOYER_IMAGE ?= $(REGISTRY)/$(PREFIX)/deployer:$(TAG)
 CONJUR_IMAGE ?= $(REGISTRY)/$(PREFIX):$(TAG)
 POSTGRES_SOURCE_IMAGE ?= postgres:10.1
 POSTGRES_IMAGE ?= $(REGISTRY)/$(PREFIX)/postgres:$(TAG)
-UBBAGENT_IMAGE ?= $(REGISTRY)/$(PREFIX)/ubbagent:$(TAG)
 
 APP_PARAMETERS ?= { \
   "name": "$(NAME)", \
   "namespace": "$(NAMESPACE)", \
   "imageConjur": "$(CONJUR_IMAGE)", \
-  "imageUbbagent": "$(UBBAGENT_IMAGE)", \
   "reportingSecret": "$(NAME)-reporting-secret" \
 }
-TESTER_IMAGE ?= $(REGISTRY)/tester:$(TAG)
+TESTER_IMAGE ?= $(REGISTRY)/$(PREFIX)/tester:$(TAG)
 APP_TEST_PARAMETERS ?= { \
   "imageTester": "$(TESTER_IMAGE)" \
 }
@@ -49,8 +46,7 @@ APP_TEST_PARAMETERS ?= { \
 app/build:: .build/conjur/deployer \
             .build/conjur/conjur \
 						.build/conjur/postgres \
-						.build/conjur/tester \
-						.build/conjur/ubbagent
+						.build/conjur/tester
 
 .build/conjur: | .build
 	mkdir -p "$@"
@@ -103,12 +99,3 @@ app/build:: .build/conjur/deployer \
 	docker push "$(POSTGRES_IMAGE)"
 	@touch "$@"
 
-# Relocate ubbagent image to $REGISTRY.
-.build/conjur/ubbagent: .build/ubbagent/ubbagent \
-                           .build/var/REGISTRY \
-                           .build/var/TAG \
-                           | .build/conjur
-	$(call print_target, $@)
-	docker tag "gcr.io/cloud-marketplace-tools/ubbagent" "$(REGISTRY)/$(PREFIX)/ubbagent:$(TAG)"
-	docker push "$(REGISTRY)/$(PREFIX)/ubbagent:$(TAG)"
-	@touch "$@"
