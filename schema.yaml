@@ -2,6 +2,7 @@ application_api_version: v1beta1
 properties:
   name:
     type: string
+    default: conjur
     x-google-marketplace:
       type: NAME
   namespace:

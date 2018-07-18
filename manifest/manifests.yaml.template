@@ -3,6 +3,9 @@ apiVersion: v1
 kind: Service
 metadata:
   name: postgres
+  labels:
+    app.kubernetes.io/name: $name
+    app.kubernetes.io/component: $name-postgres
 spec:
   ports:
   - port: 5432
@@ -13,6 +16,9 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: postgres
+  labels:
+    app.kubernetes.io/name: $name
+    app.kubernetes.io/component: $name-postgres
 spec:
   replicas: 1
   template:
@@ -29,8 +35,8 @@ kind: Secret
 metadata:
   name: conjur-data-key
   labels:
-    app.kubernetes.io/name: conjur
-    app.kubernetes.io/component: data-secret
+    app.kubernetes.io/name: $name
+    app.kubernetes.io/component: $name-service
 type: Opaque
 data:
   key: "$conjurDataKey"
@@ -40,8 +46,8 @@ kind: Secret
 metadata:
   name: conjur-database-url
   labels:
-    app.kubernetes.io/name: conjur
-    app.kubernetes.io/component: data-secret
+    app.kubernetes.io/name: $name
+    app.kubernetes.io/component: $name-service
 type: Opaque
 data:
   key: "$conjurDatabaseUrl"
@@ -51,33 +57,37 @@ kind: Service
 metadata:
   name: conjur
   labels:
-    app: conjur
-    app.kubernetes.io/name: conjur
+    app: $name
+    app.kubernetes.io/name: $name
+    app.kubernetes.io/component: $name-service
 spec:
   ports:
   - port: 80
     name: http
   selector:
-    app: conjur
+    app: $name
   type: LoadBalancer
 ---
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   labels:
-    app: conjur
-    app.kubernetes.io/name: conjur
+    app: $name
+    app.kubernetes.io/name: $name
+    app.kubernetes.io/component: $name-service
   name: conjur
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: conjur
+      app: $name
   template:
     metadata:
       labels:
-        app: conjur
-        name: conjur
+        app: $name
+        name: $name
+        app.kubernetes.io/name: $name
+        app.kubernetes.io/component: $name-service
     spec:
       containers:
       - name: conjur

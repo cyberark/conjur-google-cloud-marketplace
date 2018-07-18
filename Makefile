@@ -33,7 +33,7 @@ POSTGRES_IMAGE ?= $(REGISTRY)/$(PREFIX)/postgres:$(TAG)
 APP_PARAMETERS ?= { \
   "name": "$(NAME)", \
   "namespace": "$(NAMESPACE)", \
-  "imageConjur": "$(CONJUR_IMAGE)", \
+  "imageConjur": "$(CONJUR_IMAGE)" \
 }
 TESTER_IMAGE ?= $(REGISTRY)/$(PREFIX)/tester:$(TAG)
 APP_TEST_PARAMETERS ?= { \
