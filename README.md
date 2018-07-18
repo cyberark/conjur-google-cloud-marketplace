@@ -1,5 +1,9 @@
-# conjur-google-cloud-launcher
-Conjur application for Google Cloud Launcher
+# conjur-google-cloud-marketplace
+Conjur application for Google Cloud Marketplace.
+
+https://console.cloud.google.com/marketplace/details/cyberark/conjur-open-source
+
+---
 
 # Development
 
