@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres
+  name: $name-postgres
   labels:
     app.kubernetes.io/name: $name
     app.kubernetes.io/component: $name-postgres
@@ -15,7 +15,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: postgres
+  name: $name-postgres
   labels:
     app.kubernetes.io/name: $name
     app.kubernetes.io/component: $name-postgres
@@ -33,7 +33,7 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: conjur-data-key
+  name: $name-conjur-data-key
   labels:
     app.kubernetes.io/name: $name
     app.kubernetes.io/component: $name-service
@@ -44,7 +44,7 @@ data:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: conjur-database-url
+  name: $name-conjur-database-url
   labels:
     app.kubernetes.io/name: $name
     app.kubernetes.io/component: $name-service
@@ -55,7 +55,7 @@ data:
 apiVersion: v1
 kind: Service
 metadata:
-  name: conjur
+  name: $name-conjur
   labels:
     app: $name
     app.kubernetes.io/name: $name
@@ -75,7 +75,7 @@ metadata:
     app: $name
     app.kubernetes.io/name: $name
     app.kubernetes.io/component: $name-service
-  name: conjur
+  name: $name-conjur
 spec:
   replicas: 1
   selector:
@@ -101,10 +101,10 @@ spec:
         - name: CONJUR_DATA_KEY
           valueFrom:
             secretKeyRef:
-              name: conjur-data-key
+              name: $name-conjur-data-key
               key: key
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: conjur-database-url
+              name: $name-conjur-database-url
               key: key
