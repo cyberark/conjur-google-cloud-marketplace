@@ -30,8 +30,13 @@ properties:
   conjurDatabaseUrl:
     type: string
     title: PostgreSQL connection
-    description: PostgreSQL connection string for Conjur. This string must be base64-encoded.
-    default: 'cG9zdGdyZXM6Ly9wb3N0Z3Jlc0Bwb3N0Z3Jlcy9wb3N0Z3Jlcw=='  # postgres://postgres@postgres/postgres.
+    description: PostgreSQL connection string for Conjur.
+    default: 'postgres://postgres@postgres/postgres'
+    x-google-marketplace:
+      type: STRING
+      string:
+        generatedProperties:
+          base64Encoded: conjurDatabaseUrlEncoded
 required:
 - name
 - namespace

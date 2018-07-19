@@ -50,7 +50,7 @@ metadata:
     app.kubernetes.io/component: $name-service
 type: Opaque
 data:
-  key: "$conjurDatabaseUrl"
+  key: "$conjurDatabaseUrlEncoded"
 ---
 apiVersion: v1
 kind: Service
