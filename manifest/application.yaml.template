@@ -26,6 +26,19 @@ spec:
     links:
     - description: Getting Started
       url: https://www.conjur.org/get-started/
+    notes: |-
+      # Access Conjur
+
+      You can view the Conjur Status Dashboard at the address listed on the table to the left.
+
+      Note that it might take some time for the external IP to be provisioned.
+
+      # Configure Conjur
+
+      To create an initial account and login, follow the instructions here:
+      https://www.conjur.org/get-started/install-conjur.html#install-and-configure
+
+      Use `kubectl exec <conjur-pod> ...` instead of `docker-compose exec ...`.
   selector:
     matchLabels:
       app.kubernetes.io/name: "$name"
@@ -36,26 +49,10 @@ spec:
     kind: Secret
   - group: v1
     kind: Service
-  notes: |-
-    # Access Conjur
+  info:
+  - name: Conjur Status Dashboard IP
+    type: Reference
+    valueFrom:
+      serviceRef:
+        name: $name-conjur
 
-    Get the external IP of the Conjur service and visit
-      the URL printed below in your browser to see the status page.
-
-      ```
-      SERVICE_IP=$(kubectl get \
-        --namespace ${namespace} \
-        svc ${name} \
-        -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-
-      echo "http://${SERVICE_IP}"
-      ```
-
-      Note that it might take some time for the external IP to be provisioned.
-
-    # Configure Conjur
-
-    To create an initial account and login, follow the instructions here:
-      https://www.conjur.org/get-started/install-conjur.html#install-and-configure
-
-      Use `kubectl exec <conjur-pod> ...` instead of `docker-compose exec ...`.
