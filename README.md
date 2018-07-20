@@ -91,8 +91,8 @@ export NAMESPACE=conjur
 Configure the container images:
 
 ```shell
-export IMAGE_CONJUR="marketplace.gcr.io/cyberark/conjur:latest"
-export IMAGE_POSTGRES="marketplace.gcr.io/cyberark/conjur/postgres:latest"
+export IMAGE_CONJUR="gcr.io/cloud-marketplace/cyberark/conjur-open-source:1.0"
+export IMAGE_POSTGRES="gcr.io/cloud-marketplace/cyberark/conjur-open-source/postgres:1.0"
 ```
 
 The images above are referenced by
