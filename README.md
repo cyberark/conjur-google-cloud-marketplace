@@ -1,80 +1,148 @@
-# conjur-google-cloud-marketplace
-Conjur application for Google Cloud Marketplace.
+# Overview
 
-https://console.cloud.google.com/marketplace/details/cyberark/conjur-open-source
+CyberArk Conjur automatically secures secrets used by privileged users and machine identities.
 
----
+[Learn more.](https://www.conjur.org)
 
-# Development
+# Installation
 
-## Consuming This Repository
+## Quick install with Google Cloud Marketplace
 
-1. Clone the repository:
+Get up and running with a few clicks!
+Install this WordPress app to a Google Kubernetes Engine cluster using Google Cloud Marketplace.
+Follow the [on-screen instructions](https://console.cloud.google.com/marketplace/details/cyberark/conjur-open-source).
 
-    `$ git clone _this_repo_address_`
+## Command line instructions
 
-2. Update the Google Cloud Launcher [submodules|git-submodules]:
+### Prerequisites
 
-    ```
-    $ git submodule sync --recursive
-    $ git submodule update --recursive --init --force
-    ```
+#### Set up command-line tools
 
-[git-submodules]: https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools
+You'll need the following tools in your development environment:
+- [gcloud](https://cloud.google.com/sdk/gcloud/)
+- [kubectl](https://kubernetes.io/docs/reference/kubectl/overview/)
+- [docker](https://docs.docker.com/install/)
+- [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
-## Working with the Google Cloud Onboarding Project
+Configure `gcloud` as a Docker credential helper:
 
-The project URL is: https://console.cloud.google.com/home/dashboard?organizationId=854380395992&project=conjur-cloud-launcher-onboard
-    
-## Cluster Setup
-
-0. Set environment variables with `source setenv.sh`.
-
-1. Run the following command to create the Application CRD: `$ make crd/install`.
-
-2. Create the namespace from `setenv.sh`: `kubectl create ns "$(whoami)"`
-
-3. Run the following to create the app: `$ make app/install`.
-
-4. Run the following to watch the app: `$ make app/watch`.
-
-5. Once the app is ready, find the external IP for Conjur and open it in your browser
-    to view Conjur's status page:
-
-    ```sh-session
-    $ kubectl get svc
-    NAME       TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)        AGE
-    conjur     LoadBalancer   10.55.254.167   35.237.110.166   80:30360/TCP   1m
-
-    $ open http://35.237.110.166
-    ```
-
-6. Run the following to uninstall the app: `$ make app/uninstall`.
-
-## Pushing a New Container Image
-1. Install the gcloud SDK on your local machine: https://cloud.google.com/sdk/docs/
-2. Configure your loacl Docker to use the gcloud command-line tool to authenticate requests to the Google Cloud Container Registry (based on these [instructions|docker-gcloud-auth]):
-
-    `$ gcloud auth configure-docker`
-
-3. Tag and push the imge: `$ make clean; make .build/conjur/conjur
-
-[docker-gcloud-auth]: https://cloud.google.com/container-registry/docs/quickstart#add_the_image_to_product_name_short
-
-## Updating the Conjur Deployer Container Image
-From the repo root folder, run the following commands:
-
-```sh-session
-$ make clean; make .build/conjur/conjur
+```shell
+gcloud auth configure-docker
 ```
 
-## Testing
+#### Create a Google Kubernetes Engine cluster
 
-To test the installer, run:
+Create a new cluster from the command line:
 
-```sh
-$ source setenv.sh
-$ make app/verify
+```shell
+export CLUSTER=wordpress-cluster
+export ZONE=us-west1-a
+
+gcloud container clusters create "$CLUSTER" --zone "$ZONE"
 ```
 
-This will launch the application in a custom namespace, test it, and then delete the namespace.
+Configure `kubectl` to connect to the new cluster:
+
+```shell
+gcloud container clusters get-credentials "$CLUSTER" --zone "$ZONE"
+```
+
+#### Clone this repo
+
+Clone this repo and the associated tools repo:
+
+```shell
+git clone --recursive https://github.com/cyberark/conjur-google-cloud-marketplace.git
+git submodule sync --recursive
+git submodule update --recursive --init --force
+```
+
+
+#### Install the Application resource definition
+
+An Application resource is a collection of individual Kubernetes components,
+such as Services, Deployments, and so on, that you can manage as a group.
+
+To set up your cluster to understand Application resources, run the following command:
+
+```shell
+kubectl apply -f marketplace-k8s-app-tools/crd/*
+```
+
+You need to run this command once.
+
+The Application resource is defined by the
+[Kubernetes SIG-apps](https://github.com/kubernetes/community/tree/master/sig-apps)
+community. The source code can be found on
+[github.com/kubernetes-sigs/application](https://github.com/kubernetes-sigs/application).
+
+### Install the Application
+
+#### Configure the app with environment variables
+
+Choose the instance name and namespace for the app.
+
+```shell
+export APP_INSTANCE_NAME=conjur-1
+export NAMESPACE=conjur
+```
+
+Configure the container images:
+
+```shell
+export IMAGE_CONJUR="marketplace.gcr.io/cyberark/conjur:latest"
+export IMAGE_POSTGRES="marketplace.gcr.io/cyberark/conjur/postgres:latest"
+```
+
+The images above are referenced by
+[tag](https://docs.docker.com/engine/reference/commandline/tag). We recommend
+that you pin each image to an immutable
+[content digest](https://docs.docker.com/registry/spec/api/#content-digests).
+This ensures that the installed application always uses the same images,
+until you are ready to upgrade. To get the digest for the image, use the
+following script:
+
+```shell
+for i in "IMAGE_CONJUR" "IMAGE_POSTGRES"; do
+  repo=$(echo ${!i} | cut -d: -f1);
+  digest=$(docker pull ${!i} | sed -n -e 's/Digest: //p');
+  export $i="$repo@$digest";
+  env | grep $i;
+done
+```
+
+The Conjur data key is generated by the
+deployer and does not need to be created
+beforehand.
+
+#### Create namespace in your Kubernetes cluster
+
+We recommend running Conjur in its own namespace.
+If you use a different namespace than the `default`, run the command below to create a new namespace:
+
+```shell
+kubectl create namespace "$NAMESPACE"
+```
+
+#### Install the application with Helm to your Kubernetes cluster
+
+Use `helm` to deploy the application to your Kubernetes cluster:
+
+If you'd like to use an external database, 
+use the `helm` argument `--set conjur.databaseUrl='postgresql://[user[:password]@][netloc][:port][/dbname][?param1=value1&...]'` below. If `conjur.databaseUrl` is not specified, a postgres deployment and service are created.
+See [conjur/values.yaml](conjur/values.yaml) for all available parameters and their defaults.
+
+```shell
+helm install ./conjur
+```
+
+#### View the app in the Google Cloud Console
+
+To get the Console URL for your app, run the following command:
+
+```shell
+echo "https://console.cloud.google.com/kubernetes/application/${ZONE}/${CLUSTER}/${NAMESPACE}/${APP_INSTANCE_NAME}"
+```
+
+To view the app, open the URL in your browser.
+
