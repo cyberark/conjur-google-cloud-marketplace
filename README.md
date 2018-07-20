@@ -145,7 +145,7 @@ To get the Console URL for your app, run the following command:
 echo "https://console.cloud.google.com/kubernetes/application/${ZONE}/${CLUSTER}/${NAMESPACE}/${APP_INSTANCE_NAME}"
 ```
 
-To view the status page, open the URL in your browser.
+To view the app, open the URL in your browser.
 
 ### Set up Conjur
 
