@@ -31,7 +31,7 @@ properties:
     type: string
     title: PostgreSQL connection
     description: PostgreSQL connection string for Conjur.
-    default: "postgres://postgres@conjur-postgres/postgres"
+    default: "postgres://postgres@postgres/postgres"
     x-google-marketplace:
       type: STRING
       string:
