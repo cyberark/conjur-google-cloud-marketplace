@@ -9,17 +9,17 @@ properties:
     type: string
     x-google-marketplace:
       type: NAMESPACE
-  imageConjur:
+  conjur.image:
     type: string
     default: $REGISTRY/cyberark:$TAG
     x-google-marketplace:
       type: IMAGE
-  imagePostgres:
+  postgres.image:
     type: string
     default: $REGISTRY/cyberark/postgres:$TAG
     x-google-marketplace:
       type: IMAGE
-  conjurDataKey:  # This is a 32-byte base64-encoded string. It also needs to be base64-encoded, as a secret.
+  conjur.dataKey:
     type: string
     title: Conjur Data key
     description: Encryption key for Conjur database.
@@ -27,20 +27,15 @@ properties:
       type: GENERATED_PASSWORD
       generatedPassword:
         length: 32
-        base64: true
-  conjurDatabaseUrl:
+        base64: false
+  conjur.databaseUrl:
     type: string
     title: PostgreSQL connection
     description: PostgreSQL connection string for Conjur.
-    default: "postgres://postgres@postgres/postgres"
-    x-google-marketplace:
-      type: STRING
-      string:
-        generatedProperties:
-          base64Encoded: conjurDatabaseUrlEncoded
+
 required:
 - name
 - namespace
-- imageConjur
-- conjurDataKey
-- conjurDatabaseUrl
+- conjur.image
+- postgres.image
+- conjur.dataKey

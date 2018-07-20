@@ -1,22 +1,24 @@
 ---
+{{ if .Values.conjur.databaseUrl }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres
+  name: {{ .Release.Name }}-postgres
   labels: &AppPostgresLabels
-    app.kubernetes.io/name: $name
+    app.kubernetes.io/name: {{ .Release.Name }}
     app.kubernetes.io/component: postgres
 spec:
   ports:
   - port: 5432
   selector: *AppPostgresLabels
+{{ end }}
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: $name-postgres
+  name: {{ .Release.Name }}-postgres
   labels: &AppPostgresLabels
-    app.kubernetes.io/name: $name
+    app.kubernetes.io/name: {{ .Release.Name }}
     app.kubernetes.io/component: postgres
 spec:
   replicas: 1
@@ -25,37 +27,41 @@ spec:
       labels: *AppPostgresLabels
     spec:
       containers:
-      - image: $imagePostgres
+      - image: {{ .Values.postgres.image }}
         name: postgres
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: $name-conjur-data-key
+  name: {{ .Release.Name }}-conjur-data-key
   labels:
-    app.kubernetes.io/name: $name
+    app.kubernetes.io/name: {{ .Release.Name }}
     app.kubernetes.io/component: service
 type: Opaque
 data:
-  key: "$conjurDataKey"
+  key: "{{ .Values.conjur.dataKey | b64enc }}"
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: $name-conjur-database-url
+  name: {{ .Release.Name }}-conjur-database-url
   labels:
-    app.kubernetes.io/name: $name
+    app.kubernetes.io/name: {{ .Release.Name }}
     app.kubernetes.io/component: service
 type: Opaque
 data:
-  key: "$conjurDatabaseUrlEncoded"
+  {{ if .Values.conjur.databaseUrl }}
+  key: {{ .Values.conjur.databaseUrl | b64enc }}
+  {{ else }}
+  key: {{ printf "postgres://postgres@%v-postgres/postgres" .Release.Name | b64enc }}
+  {{ end }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: $name-conjur
+  name: {{ .Release.Name }}-conjur
   labels: &AppConjurLabels
-    app.kubernetes.io/name: $name
+    app.kubernetes.io/name: {{ .Release.Name }}
     app.kubernetes.io/component: service
 spec:
   ports:
@@ -67,9 +73,9 @@ apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   labels: &AppConjurLabels
-    app.kubernetes.io/name: $name
+    app.kubernetes.io/name: {{ .Release.Name }}
     app.kubernetes.io/component: service
-  name: $name-conjur
+  name: {{ .Release.Name }}-conjur
 spec:
   replicas: 1
   selector:
@@ -80,7 +86,7 @@ spec:
     spec:
       containers:
       - name: conjur
-        image: $imageConjur
+        image: "{{ .Values.conjur.image }}"
         imagePullPolicy: Always
         args: ["server"]
         ports:
@@ -90,10 +96,10 @@ spec:
         - name: CONJUR_DATA_KEY
           valueFrom:
             secretKeyRef:
-              name: $name-conjur-data-key
+              name: {{ .Release.Name }}-conjur-data-key
               key: key
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
-              name: $name-conjur-database-url
+              name: {{ .Release.Name }}-conjur-database-url
               key: key
