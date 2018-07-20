@@ -1,0 +1,7 @@
+conjur:
+  image: gcr.io/cyberark/:1.0
+  dataKey: ''
+  databaseUrl: ''
+
+postgres:
+  image: gcr.io/cyberark/postgres:1.0

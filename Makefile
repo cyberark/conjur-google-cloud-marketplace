@@ -33,32 +33,34 @@ POSTGRES_IMAGE ?= $(REGISTRY)/$(PREFIX)/postgres:$(TAG)
 APP_PARAMETERS ?= { \
   "name": "$(NAME)", \
   "namespace": "$(NAMESPACE)", \
-  "imageConjur": "$(CONJUR_IMAGE)" \
+  "conjur.image": "$(CONJUR_IMAGE)", \
+  "postgres.image": "$(POSTGRES_IMAGE)" \
 }
 TESTER_IMAGE ?= $(REGISTRY)/$(PREFIX)/tester:$(TAG)
 APP_TEST_PARAMETERS ?= { \
-  "imageTester": "$(TESTER_IMAGE)" \
+  "tester.image": "$(TESTER_IMAGE)" \
 }
 
 # Extend the target as defined in app.Makefile to
 # include real dependencies.
 app/build:: .build/conjur/deployer \
             .build/conjur/conjur \
-						.build/conjur/postgres \
-						.build/conjur/tester
+            .build/conjur/postgres \
+            .build/conjur/tester
 
 .build/conjur: | .build
 	mkdir -p "$@"
 
 .build/conjur/deployer: apptest/deployer/* \
-												apptest/deployer/manifest/* \
-												deployer/* \
-												manifest/* \
-												schema.yaml \
-												.build/marketplace/deployer/envsubst \
-												.build/var/REGISTRY \
-												.build/var/TAG \
-												| .build/conjur
+                        apptest/deployer/conjur/* \
+                        apptest/deployer/conjur/templates/* \
+                        deployer/* \
+                        conjur/* \
+                        conjur/templates/* \
+                        schema.yaml \
+                        .build/var/REGISTRY \
+                        .build/var/TAG \
+                        | .build/conjur
 	$(call print_target, $@)
 	docker build \
 	    --build-arg REGISTRY="$(REGISTRY)" \
