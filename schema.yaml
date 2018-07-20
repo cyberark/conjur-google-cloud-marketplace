@@ -27,7 +27,7 @@ properties:
       type: GENERATED_PASSWORD
       generatedPassword:
         length: 32
-        base64: false
+        base64: true
   conjur.databaseUrl:
     type: string
     title: PostgreSQL connection
