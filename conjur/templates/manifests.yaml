@@ -1,5 +1,5 @@
 ---
-{{ if .Values.conjur.databaseUrl }}
+{{ if eq .Values.conjur.databaseUrl "" }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -11,7 +11,6 @@ spec:
   ports:
   - port: 5432
   selector: *AppPostgresLabels
-{{ end }}
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -30,6 +29,7 @@ spec:
       - image: {{ .Values.postgres.image }}
         name: postgres
 ---
+{{ end }}
 apiVersion: v1
 kind: Secret
 metadata:
