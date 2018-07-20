@@ -33,7 +33,7 @@ spec:
         following command to expose an external IP:
 
         ```
-        kubectl patch svc "{{ .Release.Name }}conjur" \
+        kubectl patch svc "{{ .Release.Name }}-conjur" \
           --namespace "$namespace" \
           -p '{"spec": {"type": "LoadBalancer"}}'
         ```
