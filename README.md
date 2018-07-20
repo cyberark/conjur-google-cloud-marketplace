@@ -230,7 +230,7 @@ The default postgres deployment does not persist data between upgrades.
 Set the new image version in an environment variable:
 
 ```shell
-export IMAGE_CONJUR=gcr.io/conjur-cloud-launcher-onboard/cyberark:latest
+export IMAGE_CONJUR=gcr.io/cloud-marketplace/cyberark/conjur-open-source:1.0
 ```
 
 Update the Deployment definition with the reference to the new image:

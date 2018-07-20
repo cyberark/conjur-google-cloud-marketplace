@@ -1,7 +1,7 @@
 conjur:
-  image: gcr.io/cyberark:1.0
+  image: gcr.io/cloud-marketplace/cyberark/conjur-open-source:1.0
   dataKey: ''
   databaseUrl: ''
 
 postgres:
-  image: gcr.io/cyberark/postgres:1.0
+  image: gcr.io/cloud-marketplace/cyberark/conjur-open-source/postgres:1.0
