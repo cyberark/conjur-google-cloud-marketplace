@@ -182,8 +182,8 @@ be exposed. To expose this IP:
 
 ```
 kubectl patch svc "$APP_INSTANCE_NAME-conjur" \
-        --namespace "$NAMESPACE" \
-        -p '{"spec": {"type": "LoadBalancer"}}'
+  --namespace "$NAMESPACE" \
+  -p '{"spec": {"type": "LoadBalancer"}}'
 ```
 
 Note that it might take some time for the external IP to be provisioned.
