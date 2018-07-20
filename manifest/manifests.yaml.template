@@ -3,28 +3,26 @@ apiVersion: v1
 kind: Service
 metadata:
   name: postgres
-  labels:
+  labels: &AppPostgresLabels
     app.kubernetes.io/name: $name
-    app.kubernetes.io/component: $name-postgres
+    app.kubernetes.io/component: postgres
 spec:
   ports:
   - port: 5432
-  selector:
-    app: postgres
+  selector: *AppPostgresLabels
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: $name-postgres
-  labels:
+  labels: &AppPostgresLabels
     app.kubernetes.io/name: $name
-    app.kubernetes.io/component: $name-postgres
+    app.kubernetes.io/component: postgres
 spec:
   replicas: 1
   template:
     metadata:
-      labels:
-        app: postgres
+      labels: *AppPostgresLabels
     spec:
       containers:
       - image: $imagePostgres
@@ -36,7 +34,7 @@ metadata:
   name: $name-conjur-data-key
   labels:
     app.kubernetes.io/name: $name
-    app.kubernetes.io/component: $name-service
+    app.kubernetes.io/component: service
 type: Opaque
 data:
   key: "$conjurDataKey"
@@ -47,7 +45,7 @@ metadata:
   name: $name-conjur-database-url
   labels:
     app.kubernetes.io/name: $name
-    app.kubernetes.io/component: $name-service
+    app.kubernetes.io/component: service
 type: Opaque
 data:
   key: "$conjurDatabaseUrlEncoded"
@@ -56,37 +54,29 @@ apiVersion: v1
 kind: Service
 metadata:
   name: $name-conjur
-  labels:
-    app: $name
+  labels: &AppConjurLabels
     app.kubernetes.io/name: $name
-    app.kubernetes.io/component: $name-service
+    app.kubernetes.io/component: service
 spec:
   ports:
   - port: 80
     name: http
-  selector:
-    app: $name
+  selector: *AppConjurLabels
 ---
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  labels:
-    app: $name
+  labels: &AppConjurLabels
     app.kubernetes.io/name: $name
-    app.kubernetes.io/component: $name-service
+    app.kubernetes.io/component: service
   name: $name-conjur
 spec:
   replicas: 1
   selector:
-    matchLabels:
-      app: $name
+    matchLabels: *AppConjurLabels
   template:
     metadata:
-      labels:
-        app: $name
-        name: $name
-        app.kubernetes.io/name: $name
-        app.kubernetes.io/component: $name-service
+      labels: *AppConjurLabels
     spec:
       containers:
       - name: conjur
