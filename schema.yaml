@@ -30,8 +30,10 @@ properties:
         base64: true
   conjur.databaseUrl:
     type: string
-    title: PostgreSQL connection
-    description: PostgreSQL connection string for Conjur.
+    title: External PostgreSQL connection (Optional)
+    description: >-
+      PostgreSQL connection string for Conjur. If none is provided, a Postgres
+      deployment will be created for you
 
 required:
 - name
