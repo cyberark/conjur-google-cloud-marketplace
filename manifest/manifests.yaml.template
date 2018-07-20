@@ -66,7 +66,6 @@ spec:
     name: http
   selector:
     app: $name
-  type: LoadBalancer
 ---
 apiVersion: apps/v1beta1
 kind: Deployment

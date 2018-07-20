@@ -37,6 +37,17 @@ spec:
   - group: v1
     kind: Service
   notes: |-
+    # Expose Conjur service
+
+      By default, the application does not have an external IP. Run the
+      following command to expose an external IP:
+
+      ```
+      kubectl patch svc "$name-conjur" \
+        --namespace "$namespace" \
+        -p '{"spec": {"type": "LoadBalancer"}}'
+      ```
+
     # Access Conjur
 
     Get the external IP of the Conjur service and visit
@@ -45,7 +56,7 @@ spec:
       ```
       SERVICE_IP=$(kubectl get \
         --namespace ${namespace} \
-        svc ${name} \
+        svc ${name}-conjur \
         -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
       echo "http://${SERVICE_IP}"
