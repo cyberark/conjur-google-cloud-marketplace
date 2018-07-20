@@ -173,6 +173,45 @@ API key for admin: r41crc30ys1hv3njzrvz30xq6k210ec4y61y5qmmj1xyb300btrxmer
 
 > Note that the `conjurctl account create` command gives you the public key and admin API key for the account you created. Back them up in a safe location.
 
+### Expose Conjur service
+
+By default the Conjur service is not exposed outside of the GKE cluster.
+
+To expose this service and be able to connect remotely, an external IP must
+be exposed. To expose this IP:
+
+```
+kubectl patch svc "$APP_INSTANCE_NAME-conjur" \
+        --namespace "$NAMESPACE" \
+        -p '{"spec": {"type": "LoadBalancer"}}'
+```
+
+Note that it might take some time for the external IP to be provisioned.
+Run `kubectl get svc "$APP_INSTANCE_NAME-conjur"` until the `EXTERNAL-IP` column resolves.
+
+### Connect remote with the Conjur CLI
+
+Now pull the latest [cyberark/conjur-cli:5 image](https://hub.docker.com/r/cyberark/conjur-cli/) and run it to connect to Conjur.
+
+```
+$ docker pull cyberark/conjur-cli:5
+$ docker run --rm -it --entrypoint bash cyberark/conjur-cli:5
+
+# conjur init -u [EXTERNAL_IP] -a quick-start # or whatever account you created
+# conjur authn login -u admin
+Please enter admin\'s password (it will not be echoed):
+Logged in
+
+# conjur authn whoami
+{"account":"quick-start","username":"admin"}
+```
+
+### Next steps
+
+- Go through the [Conjur Tutorials](https://www.conjur.org/tutorials/)
+- View Conjur’s [API Documentation](https://www.conjur.org/api.html)
+- Secure the server with an [NGINX Proxy](https://www.conjur.org/tutorials/nginx.html)
+
 # Scaling
 
 This is a single-instance version of Conjur.
