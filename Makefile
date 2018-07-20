@@ -33,7 +33,8 @@ POSTGRES_IMAGE ?= $(REGISTRY)/$(PREFIX)/postgres:$(TAG)
 APP_PARAMETERS ?= { \
   "name": "$(NAME)", \
   "namespace": "$(NAMESPACE)", \
-  "imageConjur": "$(CONJUR_IMAGE)" \
+  "imageConjur": "$(CONJUR_IMAGE)", \
+	"conjurDatabaseUrl": "postgres://postgres@$(NAME)-postgres/postgres" \
 }
 TESTER_IMAGE ?= $(REGISTRY)/$(PREFIX)/tester:$(TAG)
 APP_TEST_PARAMETERS ?= { \
@@ -56,7 +57,6 @@ app/build:: .build/conjur/deployer \
 												manifest/* \
 												schema.yaml \
 												.build/marketplace/deployer/envsubst \
-												.build/var/APP_DEPLOYER_IMAGE \
 												.build/var/REGISTRY \
 												.build/var/TAG \
 												| .build/conjur
