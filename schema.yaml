@@ -26,7 +26,7 @@ properties:
     x-google-marketplace:
       type: GENERATED_PASSWORD
       generatedPassword:
-        length: 16
+        length: 32
   conjurDatabaseUrl:
     type: string
     title: PostgreSQL connection
