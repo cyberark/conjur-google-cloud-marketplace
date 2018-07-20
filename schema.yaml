@@ -19,7 +19,7 @@ properties:
     default: $REGISTRY/cyberark/postgres:$TAG
     x-google-marketplace:
       type: IMAGE
-  conjurDataKey:
+  conjurDataKey:  # This is a 32-byte base64-encoded string. It also needs to be base64-encoded, as a secret.
     type: string
     title: Conjur Data key
     description: Encryption key for Conjur database.
