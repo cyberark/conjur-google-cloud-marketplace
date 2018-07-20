@@ -9,7 +9,7 @@ CyberArk Conjur automatically secures secrets used by privileged users and machi
 ## Quick install with Google Cloud Marketplace
 
 Get up and running with a few clicks!
-Install this WordPress app to a Google Kubernetes Engine cluster using Google Cloud Marketplace.
+Install this Conjur app to a Google Kubernetes Engine cluster using Google Cloud Marketplace.
 Follow the [on-screen instructions](https://console.cloud.google.com/marketplace/details/cyberark/conjur-open-source).
 
 ## Command line instructions
@@ -21,6 +21,7 @@ Follow the [on-screen instructions](https://console.cloud.google.com/marketplace
 You'll need the following tools in your development environment:
 - [gcloud](https://cloud.google.com/sdk/gcloud/)
 - [kubectl](https://kubernetes.io/docs/reference/kubectl/overview/)
+- [helm](https://github.com/helm/helm)
 - [docker](https://docs.docker.com/install/)
 - [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
@@ -35,8 +36,8 @@ gcloud auth configure-docker
 Create a new cluster from the command line:
 
 ```shell
-export CLUSTER=wordpress-cluster
-export ZONE=us-west1-a
+export CLUSTER=conjur-cluster
+export ZONE=us-central1-a
 
 gcloud container clusters create "$CLUSTER" --zone "$ZONE"
 ```
@@ -144,5 +145,100 @@ To get the Console URL for your app, run the following command:
 echo "https://console.cloud.google.com/kubernetes/application/${ZONE}/${CLUSTER}/${NAMESPACE}/${APP_INSTANCE_NAME}"
 ```
 
-To view the app, open the URL in your browser.
+To view the status page, open the URL in your browser.
 
+### Set up Conjur
+
+To initialize Conjur, an account must be created. This is done by executing a command on a Conjur pod. This only needs to be done when launching a new Conjur application, or creating a new Conjur account.
+
+```
+# Find conjur pod
+$ kubectl get po -l app=$name-conjur
+conjur-d76f44b64-rkxff   1/1       Running   0          16m
+
+# Create a Conjur account
+$ kubectl exec conjur-d76f44b64-rkxff conjurctl account create quick-start
+Created new account account 'quick-start'
+Token-Signing Public Key: -----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv9+iXUFZISHlZfGrkio5
+RG4hPijORLLMwNlHx7Bv0NMG2gFpwS25xDmBK2UgARlow+b9OS9spmLAdH15lXP5
+40HBkKX/aYnLCH55TC4T/GslyUiaLZocVn1nkExdnBYO+tbNjUUJnHp2tljfQKCD
+Lp+uqDlwbPDzUEqxPRj70ro0F8aeCVvjb0AQ7dHMnZ/FYYpJShxOwtn/FeaC+mhU
+85QlcrtN3kn+pAA9wxuoKpIN8DoCK506AftL5Dra9xdconneSZ4XhaweAzut0BLp
+Oi5nZFPVNXAUBJAg/RmmgO2C3J8zBS66wo3L7XAhJs/TXzhKYxHQKNa6GoWgc7uW
+RwIDAQAB
+-----END PUBLIC KEY-----
+API key for admin: r41crc30ys1hv3njzrvz30xq6k210ec4y61y5qmmj1xyb300btrxmer
+```
+
+> Note that the `conjurctl account create` command gives you the public key and admin API key for the account you created. Back them up in a safe location.
+
+# Scaling
+
+This is a single-instance version of Conjur.
+It is not intended to be scaled up with the current configuration.
+
+# Upgrade the Application
+
+## Prepare the environment
+
+If you are using a remote database, no changes are needed.
+
+The default postgres deployment does not persist data between upgrades.
+
+## Upgrade Conjur
+
+Set the new image version in an environment variable:
+
+```shell
+export IMAGE_CONJUR=gcr.io/conjur-cloud-launcher-onboard/cyberark:latest
+```
+
+Update the Deployment definition with the reference to the new image:
+
+```shell
+kubectl patch deployment $APP_INSTANCE_NAME-conjur \
+  --namespace $NAMESPACE \
+  --type='json' \
+  --patch="[{ \
+      \"op\": \"replace\", \
+      \"path\": \"/spec/template/spec/containers/0/image\", \
+      \"value\":\"${IMAGE_CONJUR}\" \
+    }]"
+```
+
+Monitor the process with:
+
+```shell
+kubectl get pods -l "app.kubernetes.io/name=$APP_INSTANCE_NAME" \
+  --output go-template='Status={{.status.phase}} Image={{(index .spec.containers 0).image}}' \
+  --watch
+```
+
+The Pod is terminated, and recreated with a new image for the `conjur`
+container. After the update is complete, the final state of
+the Pod is `Running`, and marked as 1/1 in the `READY` column.
+
+# Uninstall the Application
+
+## Using the Google Cloud Platform Console
+
+1. In the GCP Console, open [Kubernetes Applications](https://console.cloud.google.com/kubernetes/application).
+
+1. From the list of applications, click **Conjur by CyberArk**.
+
+1. On the Application Details page, click **Delete**.
+
+## Using the command line
+
+Delete the application release using Helm:
+
+```sh-session
+# Find the release
+$ helm list | grep conjur
+reeling-greyhound	1       	Fri Jul 20 16:36:03 2018	DEPLOYED	conjur-1.0.0
+
+# Delete the release
+$ helm delete reeling-greyhound
+release "reeling-greyhound" deleted
+```

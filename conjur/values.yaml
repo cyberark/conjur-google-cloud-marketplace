@@ -1,5 +1,5 @@
 conjur:
-  image: gcr.io/cyberark/:1.0
+  image: gcr.io/cyberark:1.0
   dataKey: ''
   databaseUrl: ''
 
