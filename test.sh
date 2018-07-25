@@ -1,7 +1,9 @@
 #!/bin/bash -e
 
 make clean
-summon -f secrets.test.yml make crd/install
+make crd/install
 
-summon -f secrets.test.yml make app/build
-summon -f secrets.test.yml make app/verify
+env \
+  TAG="${CI_COMMIT_SHA:-$(whoami)}" \
+  REGISTRY='gcr.io/conjur-gke-dev' \
+  make -e app/verify

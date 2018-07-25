@@ -71,7 +71,6 @@ app/build:: .build/conjur/deployer \
 	docker push "$(APP_DEPLOYER_IMAGE)"
 	@touch "$@"
 
-
 .build/conjur/tester:
 	$(call print_target, $@)
 	docker pull cosmintitei/bash-curl
