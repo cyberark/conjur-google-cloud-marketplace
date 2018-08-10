@@ -53,7 +53,6 @@ gcloud container clusters get-credentials "$CLUSTER" --zone "$ZONE"
 Clone this repo and the associated tools repo:
 
 ```shell
-git clone --recursive https://github.com/cyberark/conjur-google-cloud-marketplace.git
 git submodule sync --recursive
 git submodule update --recursive --init --force
 ```
