@@ -13,7 +13,7 @@ metadata:
 spec:
   descriptor:
     type: Conjur
-    version: '1.0.0'
+    version: '1.1.0'
     description: |-
       CyberArk Conjur automatically secures secrets used by privileged users and machine identities.
 

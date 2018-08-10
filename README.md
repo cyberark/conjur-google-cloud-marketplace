@@ -58,7 +58,6 @@ git submodule sync --recursive
 git submodule update --recursive --init --force
 ```
 
-
 #### Install the Application resource definition
 
 An Application resource is a collection of individual Kubernetes components,
@@ -127,11 +126,15 @@ kubectl create namespace "$NAMESPACE"
 
 #### Install the application with Helm to your Kubernetes cluster
 
+This project uses the upstream [cyberark/conjur-oss Helm chart](https://github.com/cyberark/conjur-oss-helm-chart).
+
 Use `helm` to deploy the application to your Kubernetes cluster:
 
 If you'd like to use an external database, 
-use the `helm` argument `--set conjur.databaseUrl='postgresql://[user[:password]@][netloc][:port][/dbname][?param1=value1&...]'` below. If `conjur.databaseUrl` is not specified, a postgres deployment and service are created.
+use the `helm` argument `--set conjuross.databaseUrl='postgresql://[user[:password]@][netloc][:port][/dbname][?param1=value1&...]'` below. If `conjuross.databaseUrl` is not specified, a postgres deployment and service are created.
 See [conjur/values.yaml](conjur/values.yaml) for all available parameters and their defaults.
+See [conjur-oss/values.yaml](https://github.com/cyberark/conjur-oss-helm-chart/blob/master/conjur-oss/values.yaml)
+for all available upstream Helm chart parameters and their defaults.
 
 ```shell
 helm install ./conjur

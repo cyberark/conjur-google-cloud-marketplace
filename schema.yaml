@@ -14,12 +14,22 @@ properties:
     default: $REGISTRY/cyberark:$TAG
     x-google-marketplace:
       type: IMAGE
+      image:
+        generatedProperties:
+          splitByColon:
+            before: image.repository
+            after: image.tag
   postgres.image:
     type: string
     default: $REGISTRY/cyberark/postgres:$TAG
     x-google-marketplace:
       type: IMAGE
-  conjur.dataKey:
+      image:
+        generatedProperties:
+          splitByColon:
+            before: postgres.repository
+            after: postgres.tag
+  conjuross.dataKey:
     type: string
     title: Conjur Data key
     description: Encryption key for Conjur database.
@@ -28,16 +38,16 @@ properties:
       generatedPassword:
         length: 32
         base64: true
-  conjur.databaseUrl:
+  conjuross.databaseUrl:
     type: string
     title: External PostgreSQL connection (Optional)
     description: >-
       PostgreSQL connection string for Conjur. If none is provided, a Postgres
-      deployment will be created for you
+      deployment will be created for you. This value is stored in a Kubernetess secret.
 
 required:
 - name
 - namespace
 - conjur.image
 - postgres.image
-- conjur.dataKey
+- conjuross.dataKey

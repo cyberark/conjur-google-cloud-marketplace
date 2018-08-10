@@ -1,17 +1,32 @@
 FROM launcher.gcr.io/google/debian9 AS build
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends gettext
+    && apt-get install -y --no-install-recommends gettext curl
 
-ADD conjur /tmp/chart
-RUN cd /tmp \
-    && tar -czvf /tmp/conjur.tar.gz chart
-ADD apptest/deployer/conjur /tmp/test/chart
-RUN cd /tmp/test \
-    && tar -czvf /tmp/test/conjur.tar.gz chart/
+RUN curl -L -o /tmp/helm.tgz https://storage.googleapis.com/kubernetes-helm/helm-v2.5.1-linux-amd64.tar.gz && \
+    cd /tmp && \
+    tar xvzf helm.tgz && \
+    cp linux-amd64/helm /usr/local/bin/helm && \
+    rm -rf helm.tgz linux-amd64
 
-ADD schema.yaml /tmp/schema.yaml
-ADD apptest/deployer/schema.yaml /tmp/test/schema.yaml
+RUN helm init --client-only && \
+    helm repo add cyberark https://cyberark.github.io/helm-charts
+
+COPY ./conjur /tmp/chart
+WORKDIR /tmp/chart
+
+RUN helm dep update .
+
+WORKDIR /tmp
+RUN tar -czvf conjur.tar.gz chart
+
+COPY apptest/deployer/conjur /tmp/test/chart
+WORKDIR /tmp/test
+
+RUN tar -czvf conjur.tar.gz chart
+
+COPY schema.yaml /tmp/schema.yaml
+COPY apptest/deployer/schema.yaml /tmp/test/schema.yaml
 
 # Provide registry prefix and tag for default values for images.
 ARG REGISTRY
