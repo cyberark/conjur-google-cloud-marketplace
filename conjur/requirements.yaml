@@ -1,5 +1,5 @@
 dependencies:
   - name: conjur-oss
-    version: "0.2.1"
+    version: "0.2.2"
     repository: https://cyberark.github.io/helm-charts
     alias: conjuross  # aliased to remove '-' in conjur-oss. Downstream tools have problems without this.
