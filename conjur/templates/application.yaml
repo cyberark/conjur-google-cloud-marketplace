@@ -34,7 +34,7 @@ spec:
 
         ```
         kubectl patch svc "{{ .Release.Name }}-conjur" \
-          --namespace "$namespace" \
+          --namespace {{ .Release.Namespace }} \
           -p '{"spec": {"type": "LoadBalancer"}}'
         ```
 
