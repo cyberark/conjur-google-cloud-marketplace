@@ -29,6 +29,13 @@ properties:
           splitByColon:
             before: postgres.repository
             after: postgres.tag
+  conjuross.authenticators:
+    type: string
+    default: authn
+    title: Conjur Authenticators
+    description: >-
+      Comma-separated list of authenticators to enable on Conjur.
+      See the full list at https://docs.conjur.org/Latest/en/Content/Operations/Services/authentication-types.htm.
   conjuross.dataKey:
     type: string
     title: Conjur Data key
