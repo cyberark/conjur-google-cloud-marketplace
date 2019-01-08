@@ -3,7 +3,7 @@ FROM launcher.gcr.io/google/debian9 AS build
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gettext curl
 
-RUN curl -L -o /tmp/helm.tgz https://storage.googleapis.com/kubernetes-helm/helm-v2.5.1-linux-amd64.tar.gz && \
+RUN curl -L -o /tmp/helm.tgz https://storage.googleapis.com/kubernetes-helm/helm-v2.6.1-linux-amd64.tar.gz && \
     cd /tmp && \
     tar xvzf helm.tgz && \
     cp linux-amd64/helm /usr/local/bin/helm && \
@@ -41,7 +41,7 @@ RUN cat /tmp/test/schema.yaml \
     && mv /tmp/test/schema.yaml.new /tmp/test/schema.yaml
 
 
-FROM gcr.io/cloud-marketplace-tools/k8s/deployer_helm:v0.6.2
+FROM gcr.io/cloud-marketplace-tools/k8s/deployer_helm:0.7.0
 COPY --from=build /tmp/conjur.tar.gz /data/chart/
 COPY --from=build /tmp/test/conjur.tar.gz /data-test/chart/
 COPY --from=build /tmp/schema.yaml /data/
