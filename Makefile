@@ -1,4 +1,4 @@
-TAG ?= 1.0
+TAG ?= 1.3
 
 # crd.Makefile provides targets to install Application CRD.
 include ./marketplace-k8s-app-tools/crd.Makefile
@@ -29,12 +29,15 @@ APP_DEPLOYER_IMAGE ?= $(REGISTRY)/$(PREFIX)/deployer:$(TAG)
 CONJUR_IMAGE ?= $(REGISTRY)/$(PREFIX):$(TAG)
 POSTGRES_SOURCE_IMAGE ?= postgres:10.1
 POSTGRES_IMAGE ?= $(REGISTRY)/$(PREFIX)/postgres:$(TAG)
+NGINX_SOURCE_IMAGE ?= nginx:1.15
+NGINX_IMAGE ?= $(REGISTRY)/$(PREFIX)/nginx:$(TAG)
 
 APP_PARAMETERS ?= { \
   "name": "$(NAME)", \
   "namespace": "$(NAMESPACE)", \
   "conjur.image": "$(CONJUR_IMAGE)", \
   "postgres.image": "$(POSTGRES_IMAGE)" \
+  "nginx.image": "$(NGINX_IMAGE)" \
 }
 TESTER_IMAGE ?= $(REGISTRY)/$(PREFIX)/tester:$(TAG)
 APP_TEST_PARAMETERS ?= { \
@@ -46,6 +49,7 @@ APP_TEST_PARAMETERS ?= { \
 app/build:: .build/conjur/deployer \
             .build/conjur/conjur \
             .build/conjur/postgres \
+            .build/conjur/nginx \
             .build/conjur/tester
 
 .build/conjur: | .build
@@ -98,3 +102,11 @@ app/build:: .build/conjur/deployer \
 	docker push "$(POSTGRES_IMAGE)"
 	@touch "$@"
 
+# Relocate NGINX image to $REGISTRY
+.build/conjur/nginx: .build/var/REGISTRY \
+												| .build/conjur
+	$(call print_target, $@)
+	docker pull $(NGINX_SOURCE_IMAGE)
+	docker tag "$(NGINX_SOURCE_IMAGE)" "$(NGINX_IMAGE)"
+	docker push "$(NGINX_IMAGE)"
+	@touch "$@"

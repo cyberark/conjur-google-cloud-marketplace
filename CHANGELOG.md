@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.3.4](https://github.com/cyberark/conjur-google-cloud-launcher/releases/tag/v1.3.4) - 2019-01-08
+### Changed
+- Dependency on Conjur OSS helm chart updated to newest release
+
 ## [1.2.0](https://github.com/cyberark/conjur-google-cloud-launcher/releases/tag/v1.2.0) - 2018-12-06
 ### Changed
 - Authenticators parameter was added to configuration UI. See [conjur-oss Helm chart configuration](https://github.com/cyberark/conjur-oss-helm-chart/tree/master/conjur-oss#configuration).

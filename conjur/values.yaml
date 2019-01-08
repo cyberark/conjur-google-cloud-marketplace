@@ -8,8 +8,12 @@ conjuross:
 
   image:
     repository: gcr.io/cloud-marketplace/cyberark/conjur-open-source
-    tag: "1.0"
+    tag: "1.3"
+
+  nginx:
+    repository: gcr.io/cloud-marketplace/cyberark/conjur-open-source/nginx
+    tag: "1.3"
 
   postgres:
     repository: gcr.io/cloud-marketplace/cyberark/conjur-open-source/postgres
-    tag: "1.0"
+    tag: "1.3"

@@ -13,7 +13,7 @@ metadata:
 spec:
   descriptor:
     type: Conjur
-    version: '1.2.0'
+    version: '1.3.4'
     description: |-
       CyberArk Conjur automatically secures secrets used by privileged users and machine identities.
 
@@ -59,7 +59,7 @@ spec:
       To create an initial account and login, follow the instructions here:
         https://www.conjur.org/get-started/install-conjur.html#install-and-configure
 
-        Use `kubectl exec <conjur-pod> ...` instead of `docker-compose exec ...`.
+        Use `kubectl exec <conjur-pod> -c conjur-oss ...` instead of `docker-compose exec ...`.
   selector:
     matchLabels:
       app.kubernetes.io/name: "{{ .Release.Name }}"

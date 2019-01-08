@@ -89,8 +89,10 @@ export NAMESPACE=conjur
 Configure the container images:
 
 ```shell
-export IMAGE_CONJUR="gcr.io/cloud-marketplace/cyberark/conjur-open-source:1.0"
-export IMAGE_POSTGRES="gcr.io/cloud-marketplace/cyberark/conjur-open-source/postgres:1.0"
+export TAG_VERSION=1.3
+export IMAGE_CONJUR="gcr.io/cloud-marketplace/cyberark/conjur-open-source:$TAG_VERSION"
+export IMAGE_POSTGRES="gcr.io/cloud-marketplace/cyberark/conjur-open-source/postgres:$TAG_VERSION"
+export IMAGE_NGINX="gcr.io/cloud-marketplace/cyberark/conjur-open-source/nginx:$TAG_VERSION"
 ```
 
 The images above are referenced by
@@ -102,7 +104,7 @@ until you are ready to upgrade. To get the digest for the image, use the
 following script:
 
 ```shell
-for i in "IMAGE_CONJUR" "IMAGE_POSTGRES"; do
+for i in "IMAGE_CONJUR" "IMAGE_POSTGRES" "IMAGE_NGINX"; do
   repo=$(echo ${!i} | cut -d: -f1);
   digest=$(docker pull ${!i} | sed -n -e 's/Digest: //p');
   export $i="$repo@$digest";
@@ -159,7 +161,7 @@ $ kubectl get po -l app=$name-conjur
 conjur-d76f44b64-rkxff   1/1       Running   0          16m
 
 # Create a Conjur account
-$ kubectl exec conjur-d76f44b64-rkxff conjurctl account create quick-start
+$ kubectl exec conjur-d76f44b64-rkxff -c conjur-oss conjurctl account create quick-start
 Created new account account 'quick-start'
 Token-Signing Public Key: -----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv9+iXUFZISHlZfGrkio5
@@ -201,7 +203,7 @@ $ docker run --rm -it --entrypoint bash cyberark/conjur-cli:5
 
 # conjur init -u [EXTERNAL_IP] -a quick-start # or whatever account you created
 # conjur authn login -u admin
-Please enter admin\'s password (it will not be echoed):
+Please enter admin's password (it will not be echoed):
 Logged in
 
 # conjur authn whoami
