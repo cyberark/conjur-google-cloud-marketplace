@@ -29,6 +29,14 @@ properties:
           splitByColon:
             before: postgres.repository
             after: postgres.tag
+  conjuross.account:
+    type: string
+    default: default
+    title: Conjur Account
+    description: >-
+      If using the Conjur authenticator for Kubernetes, an account name must be
+      specified. This allows for authentication of roles under the given account.
+      Note that this field is strictly a reference; it will not create an account.
   conjuross.authenticators:
     type: string
     default: authn
@@ -51,6 +59,19 @@ properties:
     description: >-
       PostgreSQL connection string for Conjur. If none is provided, a Postgres
       deployment will be created for you. This value is stored in a Kubernetess secret.
+  conjuross.persistentVolumeSize:
+    type: string
+    default: 8Gi
+    title: Storage
+    description: Size of disk to be used for persistent PostgreSQL database
+  conjuross.ssl.expiration:
+    type: integer
+    title: Certificate Expiration (days)
+    default: 365
+    minimum: 1
+  conjuross.ssl.hostname:
+    type: string
+    title: Certificate Common Name
 
 required:
 - name
@@ -58,3 +79,6 @@ required:
 - conjur.image
 - postgres.image
 - conjuross.dataKey
+- conjuross.persistentVolumeSize
+- conjuross.ssl.expiration
+- conjuross.ssl.hostname
