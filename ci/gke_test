@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+CURRENT_DIR=$(dirname $0)
+
+echo "Running tests..."
+pushd $CURRENT_DIR/.. >/dev/null
+  ./test.sh
+popd >/dev/null

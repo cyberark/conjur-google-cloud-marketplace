@@ -15,9 +15,15 @@ pipeline {
         sh 'git submodule update --recursive --init --force'
       }
     }
-    stage('Verify application') {
+
+    stage('GKE build-test-verify-publish') {
+      when {
+        anyOf {
+          branch 'master'
+        }
+      }
       steps {
-        sh './test.sh'
+        sh 'cd ci && summon ./gke_test'
       }
     }
   }
