@@ -8,3 +8,6 @@ properties:
     type: string
     default: "conjurtest.myorg.com"
     title: Certificate Common Name
+  conjuross.serviceAccount.name:
+    type: string
+    default: "conjur-authenticator"

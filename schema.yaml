@@ -73,6 +73,27 @@ properties:
     type: string
     title: Certificate Common Name
     description: The external DNS which will be used as the endpoint for the Conjur instance.
+  conjuross.serviceAccount.name:
+    type: string
+    x-google-marketplace:
+      type: SERVICE_ACCOUNT
+      serviceAccount:
+        roles:
+        - type: ClusterRole
+          rulesType: CUSTOM
+          rules:
+          - apiGroups: [""]
+            resources: ["pods", "serviceaccounts"]
+            verbs: ["get", "list"]
+          - apiGroups: ["extensions"]
+            resources: [ "deployments", "replicasets"]
+            verbs: ["get", "list"]
+          - apiGroups: ["apps"]
+            resources: [ "deployments", "statefulsets", "replicasets"]
+            verbs: ["get", "list"]
+          - apiGroups: [""]
+            resources: ["pods/exec"]
+            verbs: ["create", "get"]
 
 required:
 - name
@@ -83,3 +104,4 @@ required:
 - conjuross.persistentVolumeSize
 - conjuross.ssl.expiration
 - conjuross.ssl.hostname
+- conjuross.serviceAccount.name
