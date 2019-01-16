@@ -72,6 +72,7 @@ properties:
   conjuross.ssl.hostname:
     type: string
     title: Certificate Common Name
+    description: The external DNS which will be used as the endpoint for the Conjur instance.
 
 required:
 - name
