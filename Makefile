@@ -20,7 +20,8 @@ include var.Makefile
 # app.Makefile provides the main targets for installing the
 # application.
 # It requires several APP_* variables defined as followed.
-#include ./makefiles/app.Makefile
+# This file is forked from https://raw.githubusercontent.com/GoogleCloudPlatform/click-to-deploy/master/k8s/app.Makefile
+include app.Makefile
 
 NAME ?= conjur
 
