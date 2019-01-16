@@ -1,26 +1,26 @@
 TAG ?= 1.3
 
 # crd.Makefile provides targets to install Application CRD.
-include ./marketplace-k8s-app-tools/crd.Makefile
+include crd.Makefile
 
 # gcloud.Makefile provides default values for
 # REGISTRY and NAMESPACE derived from local
 # gcloud and kubectl environments.
-include ./marketplace-k8s-app-tools/gcloud.Makefile
+include gcloud.Makefile
 
 # marketplace.Makefile provides targets such as
 # ".build/marketplace/deployer/envsubst" to build the base
 # deployer images locally.
-include ./marketplace-k8s-app-tools/marketplace.Makefile
+include marketplace.Makefile
 
 # ubbagent.Makefile provides ".build/ubbagent/ubbagent"
 # target to build the ubbagent image locally.
-include ./marketplace-k8s-app-tools/var.Makefile
+include var.Makefile
 
 # app.Makefile provides the main targets for installing the
 # application.
 # It requires several APP_* variables defined as followed.
-include ./marketplace-k8s-app-tools/app.Makefile
+#include ./makefiles/app.Makefile
 
 NAME ?= conjur
 
