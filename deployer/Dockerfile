@@ -1,6 +1,8 @@
 FROM launcher.gcr.io/google/debian9 AS build
 
-RUN apt-get update \
+# Cachebuster is used to forcefully invalidate the cache when needed
+RUN echo "cachebuster-20190116" >/dev/null \
+    && apt-get update \
     && apt-get install -y --no-install-recommends gettext curl
 
 RUN curl -L -o /tmp/helm.tgz https://storage.googleapis.com/kubernetes-helm/helm-v2.6.1-linux-amd64.tar.gz && \
