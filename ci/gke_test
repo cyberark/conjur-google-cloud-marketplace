@@ -3,8 +3,33 @@
 set -euo pipefail
 
 CURRENT_DIR=$(dirname $0)
+TOOLS_IMAGE_NAME="conjur-gke-marketplace-kubectl"
 
-echo "Running tests..."
-pushd $CURRENT_DIR/.. >/dev/null
-  ./test.sh
-popd >/dev/null
+function run_in_docker() {
+  docker run --rm \
+    -e DOCKER_REGISTRY_URL \
+    -e DOCKER_REGISTRY_PATH \
+    -e GCLOUD_SERVICE_KEY=/tmp$GCLOUD_SERVICE_KEY \
+    -e GCLOUD_CLUSTER_NAME \
+    -e GCLOUD_ZONE \
+    -e GCLOUD_PROJECT_NAME \
+    -v $GCLOUD_SERVICE_KEY:/tmp$GCLOUD_SERVICE_KEY \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v ~/.config:/root/.config \
+    -v "$PWD/..":/src \
+    -w /src \
+    "$TOOLS_IMAGE_NAME" \
+    bash -exc "
+      ./ci/platform_login
+      $1
+    "
+}
+
+echo "Building kubectl image..."
+docker pull google/cloud-sdk
+docker build -t "$TOOLS_IMAGE_NAME" \
+             -f Dockerfile \
+             .
+
+echo "Running build and tests..."
+run_in_docker "./test.sh"
