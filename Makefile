@@ -39,9 +39,9 @@ APP_PARAMETERS ?= { \
   "conjur.image": "$(CONJUR_IMAGE)", \
   "postgres.image": "$(POSTGRES_IMAGE)" \
   "nginx.image": "$(NGINX_IMAGE)" \
-	"conjuross.account": "" \
-	"conjuross.authenticator": "" \
-	"ssl.hostname": "conjur.myorg.com" \
+  "conjuross.account": "" \
+  "conjuross.authenticator": "" \
+  "ssl.hostname": "conjur.myorg.com" \
 }
 TESTER_IMAGE ?= $(REGISTRY)/$(PREFIX)/tester:$(TAG)
 APP_TEST_PARAMETERS ?= { \
