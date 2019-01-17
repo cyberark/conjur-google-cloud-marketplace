@@ -1,35 +1,58 @@
-#!/usr/bin/env bash
-
+#!/bin/bash
 set -euo pipefail
 
-CURRENT_DIR=$(dirname $0)
 TOOLS_IMAGE_NAME="conjur-gke-marketplace-kubectl"
+TMP_DIR="$(pwd)/.tmp"
+BIN_DIR="${TMP_DIR}/bin"
 
-function run_in_docker() {
+mkdir -p "${BIN_DIR}"
+mkdir -p "${TMP_DIR}/.kube"
+mkdir -p "${TMP_DIR}/.config"
+
+cat > "${BIN_DIR}/kubectl" <<EOF
   docker run --rm \
-    -e DOCKER_REGISTRY_URL \
-    -e DOCKER_REGISTRY_PATH \
-    -e GCLOUD_SERVICE_KEY=/tmp$GCLOUD_SERVICE_KEY \
-    -e GCLOUD_CLUSTER_NAME \
-    -e GCLOUD_ZONE \
-    -e GCLOUD_PROJECT_NAME \
-    -v $GCLOUD_SERVICE_KEY:/tmp$GCLOUD_SERVICE_KEY \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -v ~/.config:/root/.config \
-    -v "$PWD/..":/src \
-    -w /src \
-    "$TOOLS_IMAGE_NAME" \
-    bash -exc "
-      ./ci/platform_login
-      $1
-    "
-}
+    -v "${TMP_DIR}/.kube:/root/.kube" \
+    -v "${TMP_DIR}/.config:/root/.config" \
+    --entrypoint /usr/local/bin/kubectl \
+    "${TOOLS_IMAGE_NAME}" \
+    "\$@"
+EOF
+chmod +x "${BIN_DIR}/kubectl"
+
+cat > "${BIN_DIR}/gcloud" <<EOF
+  docker run --rm \
+    --ipc="host" \
+    -v "${TMP_DIR}/.kube:/root/.kube" \
+    -v "${TMP_DIR}/.config:/root/.config" \
+    --entrypoint /usr/bin/gcloud \
+    "${TOOLS_IMAGE_NAME}" \
+    "\$@"
+EOF
+chmod +x "${BIN_DIR}/gcloud"
+
+export PATH="${BIN_DIR}:${PATH}"
 
 echo "Building kubectl image..."
 docker pull google/cloud-sdk
-docker build -t "$TOOLS_IMAGE_NAME" \
+docker build -t "${TOOLS_IMAGE_NAME}" \
              -f Dockerfile \
              .
 
+./platform_login
+
+export KUBE_CONFIG="${TMP_DIR}/.kube/config"
+export GCLOUD_CONFIG="${TMP_DIR}/.config/gcloud"
+
+# Fix permissions on files created within Docker
+docker run --rm \
+    -v "${TMP_DIR}/.kube:/root/.kube" \
+    -v "${TMP_DIR}/.config:/root/.config" \
+    "${TOOLS_IMAGE_NAME}" \
+    bash -c "chown ${UID} -R /root/.kube/config /root/.config/*"
+
 echo "Running build and tests..."
-run_in_docker "./test.sh"
+pushd ../
+  trap popd EXIT
+  ./test.sh
+  trap - EXIT
+popd
