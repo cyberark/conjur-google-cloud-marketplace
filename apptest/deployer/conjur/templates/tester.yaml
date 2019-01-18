@@ -32,9 +32,9 @@ metadata:
 data:
   run.sh: |-
     set -x
-    endpoint="https://{{ .Values.conjuross.fullnameOverride }}"
+    endpoint=https://{{ index .Values "conjur-oss" "fullnameOverride" }}
     echo GET $endpoint
-    http_status_code=$(curl --insecure -o /dev/null -s -w "%{http_code}\n" $endpoint)
+    http_status_code=$(curl --insecure -s -o /dev/null -w "%{http_code}\n" $endpoint)
     echo "Expected http status code: 200"
     echo "Actual http status code: $http_status_code"
     if [[ "$http_status_code" == "200" ]]; then

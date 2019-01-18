@@ -5,7 +5,7 @@ properties:
     x-google-marketplace:
       type: IMAGE
 
-  conjuross.ssl.hostname:
+  conjur-oss.ssl.hostname:
     type: string
     default: "conjurtest.myorg.com"
     title: Certificate Common Name

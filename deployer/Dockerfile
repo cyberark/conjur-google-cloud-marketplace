@@ -1,7 +1,7 @@
 FROM launcher.gcr.io/google/debian9 AS build
 
 # Cachebuster is used to forcefully invalidate the cache when needed
-RUN echo "cachebuster-20190116" >/dev/null \
+RUN echo "cachebuster-20190118" >/dev/null \
     && apt-get update \
     && apt-get install -y --no-install-recommends gettext curl
 
