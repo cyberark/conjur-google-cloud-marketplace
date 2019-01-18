@@ -35,14 +35,14 @@ NGINX_IMAGE ?= $(REGISTRY)/$(PREFIX)/nginx:$(TAG)
 
 APP_PARAMETERS ?= { \
   "name": "$(NAME)", \
-  "namespace": "$(NAMESPACE)", \
-  "conjur.image": "$(CONJUR_IMAGE)", \
-  "postgres.image": "$(POSTGRES_IMAGE)" \
-  "nginx.image": "$(NGINX_IMAGE)" \
+  "namespace": "$(NAMESPACE)" \
 }
 TESTER_IMAGE ?= $(REGISTRY)/$(PREFIX)/tester:$(TAG)
 APP_TEST_PARAMETERS ?= { \
-  "tester.image": "$(TESTER_IMAGE)" \
+  "tester.image": "$(TESTER_IMAGE)", \
+	"conjuross.image.tag": "$(TAG)", \
+	"conjuross.nginx.tag": "$(TAG)", \
+	"conjuross.postgres.tag": "$(TAG)" \
 }
 
 # Extend the target as defined in app.Makefile to

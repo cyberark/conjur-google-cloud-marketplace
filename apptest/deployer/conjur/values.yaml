@@ -10,3 +10,15 @@ conjuross:
   serviceAccount:
     create: false
     name:
+
+  image:
+    repository: gcr.io/conjur-gke-dev/cyberark
+    tag: "1.3"
+
+  nginx:
+    repository: gcr.io/conjur-gke-dev/cyberark/conjur-open-source/nginx
+    tag: "1.3"
+
+  postgres:
+    repository: gcr.io/conjur-gke-dev/cyberark/conjur-open-source/postgres
+    tag: "1.3"

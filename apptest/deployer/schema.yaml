@@ -11,3 +11,21 @@ properties:
   conjuross.serviceAccount.name:
     type: string
     default: "conjur-authenticator"
+  conjuross.image.repository:
+    type: string
+    default: gcr.io/conjur-gke-dev/cyberark
+  conjuross.image.tag:
+    type: string
+    default: "1.3"
+  conjuross.nginx.repository:
+    type: string
+    default: gcr.io/conjur-gke-dev/cyberark/conjur-open-source/nginx
+  conjuross.nginx.tag:
+    type: string
+    default: "1.3"
+  conjuross.postgres.repository:
+    type: string
+    default: gcr.io/conjur-gke-dev/cyberark/conjur-open-source/postgres
+  conjuross.postgres.tag:
+    type: string
+    default: "1.3"
