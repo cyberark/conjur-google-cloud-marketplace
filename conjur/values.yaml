@@ -3,24 +3,11 @@
 # Any values from the conjur-oss Chart can be overridden here
 
 conjuross:
-  account: default
-  authenticators: authn
   dataKey: ""  # This will be generated for you, see ../schema.yaml.
   databaseUrl: ""
-  persistentVolumeSize: 8Gi
 
-  ssl:
-    expiration: 365 # days
-    hostname: "conjur.myorg.com"
+  rbac:
+    create: false
 
-  image:
-    repository: gcr.io/cloud-marketplace/cyberark/conjur-open-source
-    tag: "1.3"
-
-  nginx:
-    repository: gcr.io/cloud-marketplace/cyberark/conjur-open-source/nginx
-    tag: "1.3"
-
-  postgres:
-    repository: gcr.io/cloud-marketplace/cyberark/conjur-open-source/postgres
-    tag: "1.3"
+  serviceAccount:
+    create: false

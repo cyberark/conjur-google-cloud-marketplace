@@ -39,10 +39,7 @@ APP_PARAMETERS ?= { \
 }
 TESTER_IMAGE ?= $(REGISTRY)/$(PREFIX)/tester:$(TAG)
 APP_TEST_PARAMETERS ?= { \
-  "tester.image": "$(TESTER_IMAGE)", \
-	"conjuross.image.tag": "$(TAG)", \
-	"conjuross.nginx.tag": "$(TAG)", \
-	"conjuross.postgres.tag": "$(TAG)" \
+  "tester.image": "$(TESTER_IMAGE)" \
 }
 
 # Extend the target as defined in app.Makefile to
