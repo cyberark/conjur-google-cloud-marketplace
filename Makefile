@@ -32,6 +32,7 @@ POSTGRES_SOURCE_IMAGE ?= postgres:10.1
 POSTGRES_IMAGE ?= $(REGISTRY)/$(PREFIX)/postgres:$(TAG)
 NGINX_SOURCE_IMAGE ?= nginx:1.15
 NGINX_IMAGE ?= $(REGISTRY)/$(PREFIX)/nginx:$(TAG)
+DOCKERFILE ?= deployer/Dockerfile
 
 APP_PARAMETERS ?= { \
   "name": "$(NAME)", \
@@ -67,8 +68,9 @@ app/build:: .build/conjur/deployer \
 	docker build \
 	    --build-arg REGISTRY="$(REGISTRY)" \
 	    --build-arg TAG="$(TAG)" \
+	    --build-arg CONJUR_OSS_PACKAGE="$(CONJUR_OSS_PACKAGE)" \
 	    --tag "$(APP_DEPLOYER_IMAGE)" \
-	    -f deployer/Dockerfile \
+	    -f "$(DOCKERFILE)" \
 	    .
 	docker push "$(APP_DEPLOYER_IMAGE)"
 	@touch "$@"
