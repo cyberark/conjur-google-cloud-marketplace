@@ -2,14 +2,12 @@
 # From conjur-oss: https://github.com/cyberark/conjur-oss-helm-chart/blob/master/conjur-oss/values.yaml
 # Any values from the conjur-oss Chart can be overridden here
 
-conjuross:
+conjur-oss:
   dataKey: ""  # This will be generated for you, see ../schema.yaml.
   databaseUrl: ""
 
-  image:
-    repository: gcr.io/cloud-marketplace/cyberark/conjur-open-source
-    tag: "1.0"
+  rbac:
+    create: false
 
-  postgres:
-    repository: gcr.io/cloud-marketplace/cyberark/conjur-open-source/postgres
-    tag: "1.0"
+  serviceAccount:
+    create: false

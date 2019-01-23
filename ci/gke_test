@@ -1,0 +1,58 @@
+#!/bin/bash
+set -euo pipefail
+
+TOOLS_IMAGE_NAME="conjur-gke-marketplace-kubectl"
+TMP_DIR="$(pwd)/.tmp"
+BIN_DIR="${TMP_DIR}/bin"
+
+mkdir -p "${BIN_DIR}"
+mkdir -p "${TMP_DIR}/.kube"
+mkdir -p "${TMP_DIR}/.config"
+
+cat > "${BIN_DIR}/kubectl" <<EOF
+  docker run --rm \
+    -v "${TMP_DIR}/.kube:/root/.kube" \
+    -v "${TMP_DIR}/.config:/root/.config" \
+    --entrypoint /usr/local/bin/kubectl \
+    "${TOOLS_IMAGE_NAME}" \
+    "\$@"
+EOF
+chmod +x "${BIN_DIR}/kubectl"
+
+cat > "${BIN_DIR}/gcloud" <<EOF
+  docker run --rm \
+    --ipc="host" \
+    -v "${TMP_DIR}/.kube:/root/.kube" \
+    -v "${TMP_DIR}/.config:/root/.config" \
+    --entrypoint /usr/bin/gcloud \
+    "${TOOLS_IMAGE_NAME}" \
+    "\$@"
+EOF
+chmod +x "${BIN_DIR}/gcloud"
+
+export PATH="${BIN_DIR}:${PATH}"
+
+echo "Building kubectl image..."
+docker pull google/cloud-sdk
+docker build -t "${TOOLS_IMAGE_NAME}" \
+             -f Dockerfile \
+             .
+
+./platform_login
+
+export KUBE_CONFIG="${TMP_DIR}/.kube/config"
+export GCLOUD_CONFIG="${TMP_DIR}/.config/gcloud"
+
+# Fix permissions on files created within Docker
+docker run --rm \
+    -v "${TMP_DIR}/.kube:/root/.kube" \
+    -v "${TMP_DIR}/.config:/root/.config" \
+    "${TOOLS_IMAGE_NAME}" \
+    bash -c "chown ${UID} -R /root/.kube/config /root/.config/*"
+
+echo "Running build and tests..."
+pushd ../
+  trap popd EXIT
+  ./test.sh
+  trap - EXIT
+popd

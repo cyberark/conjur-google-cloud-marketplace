@@ -4,3 +4,29 @@ properties:
     default: $REGISTRY/tester:$TAG
     x-google-marketplace:
       type: IMAGE
+
+  conjur-oss.ssl.hostname:
+    type: string
+    default: "conjurtest.myorg.com"
+    title: Certificate Common Name
+
+  conjur.image:
+    type: string
+    default: $REGISTRY/cyberark:$TAG
+    x-google-marketplace:
+      type: IMAGE
+      image:
+        generatedProperties:
+          splitByColon:
+            before: image.repository
+            after: image.tag
+  postgres.image:
+    type: string
+    default: $REGISTRY/cyberark/postgres:$TAG
+    x-google-marketplace:
+      type: IMAGE
+      image:
+        generatedProperties:
+          splitByColon:
+            before: postgres.repository
+            after: postgres.tag

@@ -29,14 +29,22 @@ properties:
           splitByColon:
             before: postgres.repository
             after: postgres.tag
-  conjuross.authenticators:
+  conjur-oss.account:
+    type: string
+    default: default
+    title: Conjur Account
+    description: >-
+      If using the Conjur authenticator for Kubernetes, an account name must be
+      specified. This allows for authentication of roles under the given account.
+      Note that this field is strictly a reference; it will not create an account.
+  conjur-oss.authenticators:
     type: string
     default: authn
     title: Conjur Authenticators
     description: >-
       Comma-separated list of authenticators to enable on Conjur.
       See the full list at https://docs.conjur.org/Latest/en/Content/Operations/Services/authentication-types.htm.
-  conjuross.dataKey:
+  conjur-oss.dataKey:
     type: string
     title: Conjur Data key
     description: Encryption key for Conjur database.
@@ -45,16 +53,55 @@ properties:
       generatedPassword:
         length: 32
         base64: true
-  conjuross.databaseUrl:
+  conjur-oss.databaseUrl:
     type: string
     title: External PostgreSQL connection (Optional)
     description: >-
       PostgreSQL connection string for Conjur. If none is provided, a Postgres
       deployment will be created for you. This value is stored in a Kubernetess secret.
+  conjur-oss.persistentVolumeSize:
+    type: string
+    default: 8Gi
+    title: Storage
+    description: Size of disk to be used for persistent PostgreSQL database
+  conjur-oss.ssl.expiration:
+    type: integer
+    title: Certificate Expiration (days)
+    default: 365
+    minimum: 1
+  conjur-oss.ssl.hostname:
+    type: string
+    title: Certificate Common Name
+    description: The external DNS which will be used as the endpoint for the Conjur instance.
+  conjur-oss.serviceAccount.name:
+    type: string
+    x-google-marketplace:
+      type: SERVICE_ACCOUNT
+      serviceAccount:
+        roles:
+        - type: ClusterRole
+          rulesType: CUSTOM
+          rules:
+          - apiGroups: [""]
+            resources: ["pods", "serviceaccounts"]
+            verbs: ["get", "list"]
+          - apiGroups: ["extensions"]
+            resources: [ "deployments", "replicasets"]
+            verbs: ["get", "list"]
+          - apiGroups: ["apps"]
+            resources: [ "deployments", "statefulsets", "replicasets"]
+            verbs: ["get", "list"]
+          - apiGroups: [""]
+            resources: ["pods/exec"]
+            verbs: ["create", "get"]
 
 required:
 - name
 - namespace
 - conjur.image
 - postgres.image
-- conjuross.dataKey
+- conjur-oss.dataKey
+- conjur-oss.persistentVolumeSize
+- conjur-oss.ssl.expiration
+- conjur-oss.ssl.hostname
+- conjur-oss.serviceAccount.name

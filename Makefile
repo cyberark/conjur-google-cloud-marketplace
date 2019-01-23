@@ -1,26 +1,27 @@
-TAG ?= 1.0
+TAG ?= 1.3
 
 # crd.Makefile provides targets to install Application CRD.
-include ./marketplace-k8s-app-tools/crd.Makefile
+include crd.Makefile
 
 # gcloud.Makefile provides default values for
 # REGISTRY and NAMESPACE derived from local
 # gcloud and kubectl environments.
-include ./marketplace-k8s-app-tools/gcloud.Makefile
+include gcloud.Makefile
 
 # marketplace.Makefile provides targets such as
 # ".build/marketplace/deployer/envsubst" to build the base
 # deployer images locally.
-include ./marketplace-k8s-app-tools/marketplace.Makefile
+include marketplace.Makefile
 
 # ubbagent.Makefile provides ".build/ubbagent/ubbagent"
 # target to build the ubbagent image locally.
-include ./marketplace-k8s-app-tools/var.Makefile
+include var.Makefile
 
 # app.Makefile provides the main targets for installing the
 # application.
 # It requires several APP_* variables defined as followed.
-include ./marketplace-k8s-app-tools/app.Makefile
+# This file is forked from https://raw.githubusercontent.com/GoogleCloudPlatform/click-to-deploy/master/k8s/app.Makefile
+include app.Makefile
 
 NAME ?= conjur
 
@@ -29,12 +30,13 @@ APP_DEPLOYER_IMAGE ?= $(REGISTRY)/$(PREFIX)/deployer:$(TAG)
 CONJUR_IMAGE ?= $(REGISTRY)/$(PREFIX):$(TAG)
 POSTGRES_SOURCE_IMAGE ?= postgres:10.1
 POSTGRES_IMAGE ?= $(REGISTRY)/$(PREFIX)/postgres:$(TAG)
+NGINX_SOURCE_IMAGE ?= nginx:1.15
+NGINX_IMAGE ?= $(REGISTRY)/$(PREFIX)/nginx:$(TAG)
+DOCKERFILE ?= deployer/Dockerfile
 
 APP_PARAMETERS ?= { \
   "name": "$(NAME)", \
-  "namespace": "$(NAMESPACE)", \
-  "conjur.image": "$(CONJUR_IMAGE)", \
-  "postgres.image": "$(POSTGRES_IMAGE)" \
+  "namespace": "$(NAMESPACE)" \
 }
 TESTER_IMAGE ?= $(REGISTRY)/$(PREFIX)/tester:$(TAG)
 APP_TEST_PARAMETERS ?= { \
@@ -46,6 +48,7 @@ APP_TEST_PARAMETERS ?= { \
 app/build:: .build/conjur/deployer \
             .build/conjur/conjur \
             .build/conjur/postgres \
+            .build/conjur/nginx \
             .build/conjur/tester
 
 .build/conjur: | .build
@@ -65,8 +68,9 @@ app/build:: .build/conjur/deployer \
 	docker build \
 	    --build-arg REGISTRY="$(REGISTRY)" \
 	    --build-arg TAG="$(TAG)" \
+	    --build-arg CONJUR_OSS_PACKAGE="$(CONJUR_OSS_PACKAGE)" \
 	    --tag "$(APP_DEPLOYER_IMAGE)" \
-	    -f deployer/Dockerfile \
+	    -f "$(DOCKERFILE)" \
 	    .
 	docker push "$(APP_DEPLOYER_IMAGE)"
 	@touch "$@"
@@ -98,3 +102,11 @@ app/build:: .build/conjur/deployer \
 	docker push "$(POSTGRES_IMAGE)"
 	@touch "$@"
 
+# Relocate NGINX image to $REGISTRY
+.build/conjur/nginx: .build/var/REGISTRY \
+												| .build/conjur
+	$(call print_target, $@)
+	docker pull $(NGINX_SOURCE_IMAGE)
+	docker tag "$(NGINX_SOURCE_IMAGE)" "$(NGINX_IMAGE)"
+	docker push "$(NGINX_IMAGE)"
+	@touch "$@"

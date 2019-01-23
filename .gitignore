@@ -1,5 +1,9 @@
 .build/
+ci/.tmp/
 conjur/charts/
 conjur/requirements.lock
 
 .DS_Store
+
+# VIM swapfiles
+*.sw[po]

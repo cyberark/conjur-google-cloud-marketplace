@@ -4,7 +4,7 @@
 
 1. Clone the repository:
 
-    `$ git clone _this_repo_address_`
+    `$ git clone git@github.com:cyberark/conjur-google-cloud-marketplace.git`
 
 2. Update the Google Cloud Launcher [submodules|git-submodules]:
 
