@@ -61,6 +61,6 @@ pipeline {
 }
 
 def ReleaseVersion() {
-  application = readYaml 'conjur/templates/application.yaml'
+  application = readYaml file: 'conjur/templates/application.yaml'
   return application.spec.descriptor.version
 }
