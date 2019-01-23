@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+export REGISTRY=${REGISTRY:-'gcr.io/conjur-gke-dev'}
+export TAG=${TAG:-"$(whoami)"}
+
 make clean
 make crd/install
 
@@ -43,9 +46,6 @@ docker tag "gcr.io/cloud-marketplace-tools/k8s/dev:$MARKETPLACE_TOOLS_TAG" \
            "gcr.io/cloud-marketplace-tools/k8s/dev:$LOCAL_MARKETPLACE_TOOLS_TAG"
 
 echo "Building/verifying app..."
-env \
-  TAG="${CI_COMMIT_SHA:-$(whoami)}" \
-  REGISTRY='gcr.io/conjur-gke-dev' \
-  make -j4 -e app/verify
+make -j4 -e app/verify
 
 echo "Done!"
