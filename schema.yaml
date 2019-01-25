@@ -29,6 +29,16 @@ properties:
           splitByColon:
             before: postgres.repository
             after: postgres.tag
+  nginx.image:
+    type: string
+    default: $REGISTRY/cyberark/nginx:$TAG
+    x-google-marketplace:
+      type: IMAGE
+      image:
+        generatedProperties:
+          splitByColon:
+            before: nginx.repository
+            after: nginx.tag
   conjur-oss.account:
     type: string
     default: default
@@ -100,6 +110,7 @@ required:
 - namespace
 - conjur.image
 - postgres.image
+- nginx.image
 - conjur-oss.dataKey
 - conjur-oss.persistentVolumeSize
 - conjur-oss.ssl.expiration
