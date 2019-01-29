@@ -8,6 +8,10 @@ pipeline {
     buildDiscarder(logRotator(numToKeepStr: '30'))
   }
 
+  environment {
+    REGISTRY = 'gcr.io/conjur-cloud-launcher-onboard'
+  }
+
   stages {
     stage('Fetch marketplace submodule') {
       steps {
@@ -25,9 +29,6 @@ pipeline {
 
       environment {
         TAG = "jenkins-${env.BRANCH_NAME}"
-
-        // Avoid using the globally set 'REGISTRY'
-        REGISTRY = "gcr.io/conjur-gke-dev"
       }
 
       steps {
@@ -44,7 +45,6 @@ pipeline {
 
       environment {
         TAG = ReleaseVersion()
-        REGISTRY = 'gcr.io/conjur-cloud-launcher-onboard'
       }
 
       steps {

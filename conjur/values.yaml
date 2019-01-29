@@ -1,4 +1,3 @@
-
 # From conjur-oss: https://github.com/cyberark/conjur-oss-helm-chart/blob/master/conjur-oss/values.yaml
 # Any values from the conjur-oss Chart can be overridden here
 

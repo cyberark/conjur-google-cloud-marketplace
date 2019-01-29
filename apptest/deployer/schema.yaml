@@ -20,6 +20,7 @@ properties:
           splitByColon:
             before: image.repository
             after: image.tag
+
   postgres.image:
     type: string
     default: $REGISTRY/cyberark/postgres:$TAG
@@ -30,3 +31,14 @@ properties:
           splitByColon:
             before: postgres.repository
             after: postgres.tag
+
+  nginx.image:
+    type: string
+    default: $REGISTRY/cyberark/nginx:$TAG
+    x-google-marketplace:
+      type: IMAGE
+      image:
+        generatedProperties:
+          splitByColon:
+            before: nginx.repository
+            after: nginx.tag
