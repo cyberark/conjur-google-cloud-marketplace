@@ -10,15 +10,3 @@ conjur-oss:
 
   serviceAccount:
     create: false
-
-  image:
-    repository: gcr.io/cloud-marketplace/cyberark/conjur-open-source
-    tag: "1.3.4"
-
-  postgres:
-    repository: gcr.io/cloud-marketplace/cyberark/conjur-open-source/postgres
-    tag: "1.3.4"
-
-  nginx:
-    repository: gcr.io/conjur-gke-dev/cyberark/conjur-open-source/nginx
-    tag: "1.3.4"

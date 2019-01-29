@@ -1,5 +1,3 @@
-TAG ?= 1.3
-
 # crd.Makefile provides targets to install Application CRD.
 include crd.Makefile
 
@@ -24,6 +22,8 @@ include var.Makefile
 include app.Makefile
 
 NAME ?= conjur
+TAG ?= 1.3.4
+REGISTRY ?= gcr.io/conjur-cloud-launcher-onboard
 
 PREFIX ?= cyberark
 APP_DEPLOYER_IMAGE ?= $(REGISTRY)/$(PREFIX)/deployer:$(TAG)
