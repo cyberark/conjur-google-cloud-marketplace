@@ -22,7 +22,7 @@ include var.Makefile
 include app.Makefile
 
 NAME ?= conjur
-TAG ?= 1.3.4
+TAG ?= 1.3
 REGISTRY ?= gcr.io/conjur-cloud-launcher-onboard
 
 PREFIX ?= cyberark
