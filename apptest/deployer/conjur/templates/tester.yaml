@@ -32,7 +32,7 @@ metadata:
 data:
   run.sh: |-
     set -x
-    endpoint=https://{{ index .Values "conjur-oss" "fullnameOverride" }}
+    endpoint=https://{{ .Release.Name }}-conjur-oss
     echo GET $endpoint
     http_status_code=$(curl --insecure -s -o /dev/null -w "%{http_code}\n" $endpoint)
     echo "Expected http status code: 200"

@@ -35,7 +35,7 @@ spec:
         ```
         SERVICE_IP=$(kubectl get \
           --namespace {{ .Release.Namespace }} \
-          svc {{ .Release.Name }}-conjur \
+          svc {{ .Release.Name }}-conjur-oss-ingress \
           -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
         echo "https://${SERVICE_IP}"
@@ -52,9 +52,9 @@ spec:
 
         ```
         export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} \
-                                          -l "app={{ template "conjur-oss.name" . }},release={{ .Release.Name }}" \
+                                          -l "app=conjur-oss,release={{ .Release.Name }}" \
                                           -o jsonpath="{.items[0].metadata.name}")
-        kubectl exec $POD_NAME --container={{ .Chart.Name }} conjurctl account create {{ .Values.account | quote }}
+        kubectl exec -n {{ .Release.Namespace }} $POD_NAME --container=conjur-oss conjurctl account create {{ index .Values "conjur-oss" "account" | quote }}
         ```
 
         Note that the conjurctl account create command gives you the
