@@ -1,5 +1,2 @@
 tester:
   image: gcr.io/cyberark/tester:1.0
-
-conjur-oss:
-  fullnameOverride: conjur-conjur-oss
