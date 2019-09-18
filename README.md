@@ -270,3 +270,7 @@ reeling-greyhound	1       	Fri Jul 20 16:36:03 2018	DEPLOYED	conjur-1.0.0
 $ helm delete reeling-greyhound
 release "reeling-greyhound" deleted
 ```
+
+## License
+
+This repository is licensed under Apache License 2.0 - see [`LICENSE`](LICENSE) for more details.
