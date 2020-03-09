@@ -41,6 +41,9 @@ endef
 .PHONY: .build/app/dev
 .build/app/dev: .build/var/MARKETPLACE_TOOLS_TAG \
               | .build/app
+	# Note: print_target displays a highlighted (in yellow) message
+	# indicating the target that is being built.
+	$(call print_target, $@)
 	docker run \
 	    "gcr.io/cloud-marketplace-tools/k8s/dev:$(MARKETPLACE_TOOLS_TAG)" \
 	    cat /scripts/dev > "$@"
