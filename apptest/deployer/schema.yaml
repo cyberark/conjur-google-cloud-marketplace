@@ -2,8 +2,6 @@ properties:
   tester.image:
     type: string
     default: $REGISTRY/tester:$TAG
-    x-google-marketplace:
-      type: IMAGE
 
   conjur-oss.ssl.hostname:
     type: string

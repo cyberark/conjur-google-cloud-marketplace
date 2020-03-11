@@ -64,6 +64,8 @@ app/build:: .build/conjur/deployer \
                         .build/var/REGISTRY \
                         .build/var/TAG \
                         | .build/conjur
+	# Note: print_target displays a highlighted (in yellow) message
+	# indicating the target that is being built.
 	$(call print_target, $@)
 	docker build \
 	    --build-arg REGISTRY="$(REGISTRY)" \
