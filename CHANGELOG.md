@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Deleted x-google-marketplace section for tester.image in schema.yaml to be consistent for Google Marketplace Tools v0.10.0
 - Added a build.sh flag (`-p` or `--persist`) to persist the application deployment after testing.
 - Fixed the deployment's `deploy-info` annotations to use keys that are valid JSON keys (i.e. with quotes).
+- Updates the Google Marketplace schema we use to Version 2.
 
 ## [1.3.4](https://github.com/cyberark/conjur-google-cloud-launcher/releases/tag/v1.3.4) - 2019-01-08
 ### Changed

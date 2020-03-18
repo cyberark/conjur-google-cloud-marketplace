@@ -22,23 +22,36 @@ include var.Makefile
 include app.Makefile
 
 NAME ?= conjur
-TAG ?= 1.3
+TAG ?= 1.4.0
 REGISTRY ?= gcr.io/conjur-cloud-launcher-onboard
-
 PREFIX ?= cyberark
-APP_DEPLOYER_IMAGE ?= $(REGISTRY)/$(PREFIX)/deployer:$(TAG)
+
+# FLAT_REGISTRY allows contributors to use their own (flat hierarchy) Docker
+# registry
+FLAT_REGISTRY ?= false
+ifeq ($(FLAT_REGISTRY),true)
+  REGISTRY_PREFIX = $(REGISTRY)
+else
+  REGISTRY_PREFIX = $(REGISTRY)/$(PREFIX)
+endif
+
+APP_DEPLOYER_IMAGE ?= $(REGISTRY_PREFIX)/deployer:$(TAG)
 CONJUR_IMAGE ?= $(REGISTRY)/$(PREFIX):$(TAG)
 POSTGRES_SOURCE_IMAGE ?= postgres:10.1
-POSTGRES_IMAGE ?= $(REGISTRY)/$(PREFIX)/postgres:$(TAG)
+POSTGRES_IMAGE ?= $(REGISTRY_PREFIX)/postgres:$(TAG)
 NGINX_SOURCE_IMAGE ?= nginx:1.15
-NGINX_IMAGE ?= $(REGISTRY)/$(PREFIX)/nginx:$(TAG)
+NGINX_IMAGE ?= $(REGISTRY_PREFIX)/nginx:$(TAG)
 DOCKERFILE ?= deployer/Dockerfile
+
+$(info $$CONJUR_IMAGE is [${CONJUR_IMAGE}])
+$(info $$PREFIX is [${PREFIX}])
+$(info $$REGISTRY_PREFIX is [${REGISTRY_PREFIX}])
 
 APP_PARAMETERS ?= { \
   "name": "$(NAME)", \
   "namespace": "$(NAMESPACE)" \
 }
-TESTER_IMAGE ?= $(REGISTRY)/$(PREFIX)/tester:$(TAG)
+TESTER_IMAGE ?= $(REGISTRY_PREFIX)/tester:$(TAG)
 APP_TEST_PARAMETERS ?= { \
   "tester.image": "$(TESTER_IMAGE)" \
 }

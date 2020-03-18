@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-export REGISTRY=${REGISTRY:-'gcr.io/conjur-gke-dev'}
+export REGISTRY=${REGISTRY:-'gcr.io/conjur-cloud-launcher-onboard'}
 export TAG=${TAG:-"$(whoami)"}
 
 make clean
