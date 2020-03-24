@@ -1,4 +1,61 @@
-application_api_version: v1beta1
+x-google-marketplace:
+  schemaVersion: v2
+
+  # Must match the version of the Application custom resource object.
+  applicationApiVersion: v1beta1
+
+  # The release version must match the release tag on the deployer
+  publishedVersion: '1.4.0'
+
+  publishedVersionMetadata:
+    releaseNote: >-
+      Update marketplace tools so app works with Kubernetes version >= 1.16.
+
+    # If "recommended" is "true", users using older releases are encouraged
+    # to update as soon as possible. This is useful if, for example, this
+    # release fixes a critical issue.
+    recommended: true
+
+  # This MUST be specified to indicate that the deployer supports managed
+  # updates. Note that this could be left out or kalmSupported set to false,
+  # in which case the deployer uses schema v2 but does not support updates.
+  managedUpdates:
+    kalmSupported: false
+
+  images:
+    postgres:
+      properties:
+        imageRepo:
+          type: REPO_WITH_REGISTRY
+        imageTag:
+          type: TAG
+    nginx:
+      properties:
+        imageRepo:
+          type: REPO_WITH_REGISTRY
+        imageTag:
+          type: TAG
+    init:
+      properties:
+        imageInitFull:
+          type: FULL
+        imageInitRegistry:
+          type: REGISTRY
+        imageInitRepo:
+          type: REPO_WITHOUT_REGISTRY
+        imageInitTag:
+          type: TAG
+
+  clusterConstraints:
+    resources:
+    - requests:
+        cpu: 1000m
+        memory: 3750Mi
+      affinity:
+        simpleNodeAffinity:
+          type: REQUIRE_MINIMUM_NODE_COUNT
+          minimumNodeCount: 3
+
 properties:
   name:
     type: string
@@ -9,36 +66,6 @@ properties:
     type: string
     x-google-marketplace:
       type: NAMESPACE
-  conjur.image:
-    type: string
-    default: $REGISTRY/cyberark:$TAG
-    x-google-marketplace:
-      type: IMAGE
-      image:
-        generatedProperties:
-          splitByColon:
-            before: image.repository
-            after: image.tag
-  postgres.image:
-    type: string
-    default: $REGISTRY/cyberark/postgres:$TAG
-    x-google-marketplace:
-      type: IMAGE
-      image:
-        generatedProperties:
-          splitByColon:
-            before: postgres.repository
-            after: postgres.tag
-  nginx.image:
-    type: string
-    default: $REGISTRY/cyberark/nginx:$TAG
-    x-google-marketplace:
-      type: IMAGE
-      image:
-        generatedProperties:
-          splitByColon:
-            before: nginx.repository
-            after: nginx.tag
   conjur-oss.account:
     type: string
     default: default
@@ -108,9 +135,6 @@ properties:
 required:
 - name
 - namespace
-- conjur.image
-- postgres.image
-- nginx.image
 - conjur-oss.dataKey
 - conjur-oss.persistentVolumeSize
 - conjur-oss.ssl.expiration

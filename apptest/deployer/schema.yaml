@@ -1,3 +1,62 @@
+x-google-marketplace:
+  schemaVersion: v2
+
+  # Must match the version of the Application custom resource object.
+  applicationApiVersion: v1beta1
+
+  # The release version must match the release tag on the deployer
+  publishedVersion: '1.4.0'
+
+  images:
+    postgres:
+      properties:
+        imageRepo:
+          type: REPO_WITH_REGISTRY
+        imageTag:
+          type: TAG
+    nginx:
+      properties:
+        imageRepo:
+          type: REPO_WITH_REGISTRY
+        imageTag:
+          type: TAG
+    tester:
+      properties:
+        imageRepo:
+          type: REPO_WITH_REGISTRY
+        imageTag:
+          type: TAG
+    init:
+      properties:
+        imageInitFull:
+          type: FULL
+        imageInitRegistry:
+          type: REGISTRY
+        imageInitRepo:
+          type: REPO_WITHOUT_REGISTRY
+        imageInitTag:
+          type: TAG
+
+  clusterConstraints:
+    resources:
+    - requests:
+        cpu: 1000m
+        memory: 3750Mi
+      affinity:
+        simpleNodeAffinity:
+          type: REQUIRE_MINIMUM_NODE_COUNT
+          minimumNodeCount: 3
+
+  clusterConstraints:
+    resources:
+    - requests:
+        cpu: 1000m
+        memory: 3750Mi
+      affinity:
+        simpleNodeAffinity:
+          type: REQUIRE_MINIMUM_NODE_COUNT
+          minimumNodeCount: 3
+
 properties:
   tester.image:
     type: string
@@ -8,35 +67,14 @@ properties:
     default: "conjurtest.myorg.com"
     title: Certificate Common Name
 
-  conjur.image:
-    type: string
-    default: $REGISTRY/cyberark:$TAG
-    x-google-marketplace:
-      type: IMAGE
-      image:
-        generatedProperties:
-          splitByColon:
-            before: image.repository
-            after: image.tag
-
-  postgres.image:
-    type: string
-    default: $REGISTRY/cyberark/postgres:$TAG
-    x-google-marketplace:
-      type: IMAGE
-      image:
-        generatedProperties:
-          splitByColon:
-            before: postgres.repository
-            after: postgres.tag
-
-  nginx.image:
-    type: string
-    default: $REGISTRY/cyberark/nginx:$TAG
-    x-google-marketplace:
-      type: IMAGE
-      image:
-        generatedProperties:
-          splitByColon:
-            before: nginx.repository
-            after: nginx.tag
+required:
+- name
+- namespace
+- conjur.image
+- postgres.image
+- nginx.image
+- conjur-oss.dataKey
+- conjur-oss.persistentVolumeSize
+- conjur-oss.ssl.expiration
+- conjur-oss.ssl.hostname
+- conjur-oss.serviceAccount.name
