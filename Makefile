@@ -41,7 +41,8 @@ POSTGRES_SOURCE_IMAGE ?= postgres:10.1
 POSTGRES_IMAGE ?= $(REGISTRY_PREFIX)/postgres:$(TAG)
 NGINX_SOURCE_IMAGE ?= nginx:1.15
 NGINX_IMAGE ?= $(REGISTRY_PREFIX)/nginx:$(TAG)
-DOCKERFILE ?= deployer/Dockerfile
+DEPLOYER_DOCKERFILE ?= deployer/Dockerfile
+TESTER_DOCKERFILE ?= tester/Dockerfile
 
 $(info $$CONJUR_IMAGE is [${CONJUR_IMAGE}])
 $(info $$PREFIX is [${PREFIX}])
@@ -85,15 +86,17 @@ app/build:: .build/conjur/deployer \
 	    --build-arg TAG="$(TAG)" \
 	    --build-arg CONJUR_OSS_PACKAGE="$(CONJUR_OSS_PACKAGE)" \
 	    --tag "$(APP_DEPLOYER_IMAGE)" \
-	    -f "$(DOCKERFILE)" \
+	    -f "$(DEPLOYER_DOCKERFILE)" \
 	    .
 	docker push "$(APP_DEPLOYER_IMAGE)"
 	@touch "$@"
 
 .build/conjur/tester:
 	$(call print_target, $@)
-	docker pull cosmintitei/bash-curl
-	docker tag cosmintitei/bash-curl "$(TESTER_IMAGE)"
+	docker build \
+	    --tag "$(TESTER_IMAGE)" \
+	    -f "$(TESTER_DOCKERFILE)" \
+	    .
 	docker push "$(TESTER_IMAGE)"
 	@touch "$@"
 
