@@ -43,7 +43,7 @@ RUN cat /tmp/test/schema.yaml \
     && mv /tmp/test/schema.yaml.new /tmp/test/schema.yaml
 
 
-FROM gcr.io/cloud-marketplace-tools/k8s/deployer_helm:0.10.0
+FROM gcr.io/cloud-marketplace-tools/k8s/deployer_helm:0.10.1
 COPY --from=build /tmp/conjur.tar.gz /data/chart/
 COPY --from=build /tmp/test/conjur.tar.gz /data-test/chart/
 COPY --from=build /tmp/schema.yaml /data/
