@@ -5,7 +5,7 @@ x-google-marketplace:
   applicationApiVersion: v1beta1
 
   # The release version must match the release tag on the deployer
-  publishedVersion: '1.4.0'
+  publishedVersion: "$TAG"
 
   publishedVersionMetadata:
     releaseNote: >-
@@ -23,28 +23,26 @@ x-google-marketplace:
     kalmSupported: false
 
   images:
-    postgres:
+    '':  # Primary image has no name.
       properties:
-        imageRepo:
+        conjur-oss.image.repository:
           type: REPO_WITH_REGISTRY
-        imageTag:
+        conjur-oss.image.tag:
           type: TAG
     nginx:
       properties:
-        imageRepo:
+        conjur-oss.nginx.image.repository:
           type: REPO_WITH_REGISTRY
-        imageTag:
+        conjur-oss.nginx.image.tag:
           type: TAG
-    init:
+        # Note: pullPolicy is defaulted to "Always" in properties below.
+    postgres:
       properties:
-        imageInitFull:
-          type: FULL
-        imageInitRegistry:
-          type: REGISTRY
-        imageInitRepo:
-          type: REPO_WITHOUT_REGISTRY
-        imageInitTag:
+        conjur-oss.postgres.image.repository:
+          type: REPO_WITH_REGISTRY
+        conjur-oss.postgres.image.tag:
           type: TAG
+        # Note: pullPolicy is defaulted to "Always" in properties below.
 
   clusterConstraints:
     resources:
@@ -131,6 +129,17 @@ properties:
           - apiGroups: [""]
             resources: ["pods/exec"]
             verbs: ["create", "get"]
+  # The properties that follow do not have x-google-marketplace configuration
+  # and therefore will not show up on the Marketplace user configuration.
+  conjur.application.version:
+    type: string
+    default: $TAG
+  conjur-oss.nginx.image.pullPolicy:
+    type: string
+    default: Always
+  conjur-oss.postgres.image.pullPolicy:
+    type: string
+    default: Always
 
 required:
 - name

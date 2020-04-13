@@ -22,13 +22,13 @@ must be able to build and test the required component images. To do this,
 you will need:
 
 - A development host with Docker server running.
-- A Kubernetes platform on which to deploy the application and test containers. For building and testing, this does not need to be a Google Kubernetes Engine (GKE) cluster.
-- A Docker registry to which to push images. This can be either:
-  - A Dockerhub registry, or...
-  - Access to the `conjur-cloud-launcher-onboard` GCP project, which
-    provides access to the `gcr.io/conjur-cloud-launcher-onboard`
-    Google Cloud Registry (GCR). To test if you have access to this GCP
-    project, try browsing to this location:
+- A Kubernetes platform on which to deploy the application and test containers.
+For building and testing, this does not need to be a Google Kubernetes Engine
+(GKE) cluster.
+- Access to a Google Cloud Registry (GCR) account. If you have access to the
+`conjur-cloud-launcher-onboard` GCP project, then this will provide you with
+access to the `gcr.io/conjur-cloud-launcher-onboard` GCR registry. To test
+if you have access to this GCP project, try browsing to this location:
     https://console.cloud.google.com/home/dashboard?project=conjur-cloud-launcher-onboard
 
 ### Prerequisites for Publishing to Google Marketplace 
@@ -110,21 +110,9 @@ kubectl config set-context --current --namespace="$NAMESPACE"
 If you choose not to create a namespace as shown above, a namespace with
 a random name (of the form "apptest-XXXXXX") will be created.
 
-### Configure Docker Registry
+### Configure Google Cloud Registry
 
-If you are using your own registry, run the following:
-
-```sh-session
-cd conjur-google-cloud-marketplace  # Root dir of this repository
-export REGISTRY=<your-docker-registry>
-export FLAT_REGISTRY=true
-```
-The setting of `FLAT_REGISTRY=true` is required because Dockerhub
-registries typically require images to be stored in a flat
-registry namespace (as opposed to Google Cloud Registry,
-where images are stored in project directories).
-
-Otherwise, if you are using the Google Cloud Registry, run:
+Set $REGISTRY to point to your Google Cloud Registry:
 
 ```sh-session
 cd conjur-google-cloud-marketplace
@@ -138,13 +126,20 @@ export REGISTRY=gcr.io/conjur-cloud-launcher-onboard
 Follow these steps if you would like to build and deploy the application
 and leave it running (for manual verification).
 
+1. Configure an Issuer Common Name (CN) to be used in Conjur CA certificates.
+This can be used as a DNS fully qualified hostname for access to Conjur:
+
+   ```sh-session
+   export CERTIFICATE_CN="myconjur.myorg.com"
+   ```
+
 1. Build and deploy the application with the `--persist` flag:
 
    ```sh-session
    ./build.sh --persist
    ```
 
-2. Confirm that the application is running and test jobs have completed.
+1. Confirm that the application is running and test jobs have completed.
 
    When the script completes, you should see:
 
@@ -172,7 +167,7 @@ and leave it running (for manual verification).
    $ 
    ```
 
-3. Test access to the application.
+1. Test access to the application.
 
    Get the Conjur service load balancer external IP. It may take a few
    minutes for the external IP to be assigned:
@@ -196,6 +191,83 @@ and leave it running (for manual verification).
 
    ```sh-session
    Your Conjur server is running!
+   ```
+
+1. Configure Conjur
+
+   Create an initial `default` account. Refer to the Conjur configuration instructions
+   [here](https://www.conjur.org/get-started/quick-start/oss-environment/#step-5).
+
+   ```
+   export POD_NAME=$(kubectl get pods \
+          -l "app=conjur-oss" \
+          -o jsonpath="{.items[0].metadata.name}")
+   kubectl exec $POD_NAME --container=conjur-oss conjurctl account create default
+   ```
+
+   Note that the above commands give you the public key and admin API key for
+   the account that was created. Back them up in a safe location.
+
+1. Connect to Conjur
+
+   Start a container with Conjur CLI and authenticate with Conjur as
+   user `admin`:
+
+   ```
+   INGRESS_SVC=$(kubectl get svc --no-headers -o custom-columns=":metadata.name" | grep conjur-oss-ingress)
+   export EXT_IP=$(kubectl get svc $INGRESS_SVC -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
+   docker run --rm -it --env EXT_IP --env CERTIFICATE_CN --entrypoint bash cyberark/conjur-cli:5
+   ```
+
+   In the Conjur CLI container, set up an entry in `/etc/hosts` for the
+   Conjur server. (Alternatively, you can configure a DNS A record mapping
+   the hostname that you configured in $CERTIFICATE_CN to the Conjur's external IP address).
+
+   ```
+   grep -q ($CERTIFICATE_CN /etc/hosts && \
+       sed -i "s/.*$CERTIFICATE_CN/$EXT_IP $CERTIFICATE_CN/" /etc/hosts) || \
+       echo "$EXT_IP $CERTIFICATE_CN" >> /etc/hosts
+   ```
+
+   Confirm that an entry has been added for $CERTIFICATE_CN in /etc/hosts:
+
+   ```sh-session
+   $ grep $CERTIFICATE_CN /etc/hosts
+   35.237.172.100 myconjur.myorg.com
+   $
+   ```
+
+   Then connect with the Conjur server using the account just created:
+
+   ```sh-session
+   $ conjur init -u https://$CERTIFICATE_CN -a default
+
+   SHA1 Fingerprint=D2:1D:5D:1B:AD:2A:94:28:4F:D9:22:7B:0D:2C:5C:00:01:23:45:67
+
+   Please verify this certificate on the appliance using command:
+                 openssl x509 -fingerprint -noout -in ~conjur/etc/ssl/conjur.pem
+
+   Trust this certificate (yes/no): yes
+   Wrote certificate to /root/conjur-default.pem
+   Wrote configuration to /root/.conjurrc
+   $
+   ```
+
+   And then authenticate as user `admin`, using the admin API key obtained
+   in the previous section as a password:
+
+   ```sh-session
+   $ conjur authn login -u admin -p <API_KEY>
+   Logged in
+   $
+   ```
+
+   Finally, check that you are logged in as user `admin`:
+
+   ```sh-session
+   $ conjur authn whoami
+   {"account":"default","username":"admin"}
+   $
    ```
 
 #### Build, Deploy, Run Smoke Tests, and (Automatic) Clean Up
@@ -258,28 +330,25 @@ kubectl delete $NAMESPACE
 1. View the current published version, and determine a new version number:
 
    ```sh-session
-   $ grep publishedVersion: schema.yaml
-   publishedVersion: '1.4.0'
+   $ cat VERSION
+   1.6.0
    $
    ```
 
-   In the above example, version `1.4.1` would be an acceptable new
+   In the above example, version `1.6.1` would be an acceptable new
    version number.
-1. Update tag references to the new version:
+1. Update the VERSION file with the new version:
 
    ```sh-session
-   export NEW_VERSION=1.4.1
-   sed -i "s/TAG_VERSION=.*/TAG_VERSION=$NEW_VERSION/" README.md
-   sed -i "s/publishedVersion: .*/publishedVersion: \'$NEW_VERSION\'/" schema.yaml
-   sed -i "s/version: .*/version: \'$NEW_VERSION\'/" conjur/templates/application.yaml
-   sed -i "s/TAG ?= .*/TAG ?= '$NEW_VERSION/" Makefile
+   $ echo 1.6.1 > VERSION
+   $
    ```
 
 1. In CHANGELOG.md, move all entries currently in the `UNRELEASED` section
    to a new section with a header similar to the following:
 
    ```sh-session
-   ## [1.4.1](https://github.com/cyberark/conjur-google-cloud-launcher/releases/tag/v1.4.1) - 2020-03-18
+   ## [1.6.1](https://github.com/cyberark/conjur-google-cloud-launcher/releases/tag/v1.6.1) - 2020-04-18
    ```
 
 1. Commit these changes - `Bump version to x.y.z` is an acceptable commit
@@ -296,7 +365,7 @@ images.
 ### Add a git tag
 
 1. Once your changes have been reviewed and merged into master, tag the version
-   using e.g. `git tag -s v1.4.1`. Note this requires you to be able to sign
+   using e.g. `git tag -s v1.6.1`. Note this requires you to be able to sign
    releases. Consult the
    [github documentation on signing commits](https://help.github.com/articles/signing-commits-with-gpg/)
    on how to set this up. `vx.y.z` is an acceptable tag message.
@@ -328,15 +397,17 @@ above, publishing images to the Google Marketplace will require:
 
 ### Check for Vulnerabilities in Images Pushed to GCR
 
-In a browser, navigate to the following GCR locations, and click on
-the `Vulnerabilies` button to check for vulnerabilies:
+In a browser, navigate to the GCR image locations corresponding to the
+versions you would like to publish, and click on the `Vulnerabilities`
+button to check for vulnerabilies. For example, for release 1.6.1, the
+image information would be found here:
 
-- https://gcr.io/conjur-cloud-launcher-onboard/cyberark:1.4.1
-- https://gcr.io/conjur-cloud-launcher-onboard/cyberark/deployer:1.4.1
-- https://gcr.io/conjur-cloud-launcher-onboard/cyberark/nginx:1.4.1
-- https://gcr.io/conjur-cloud-launcher-onboard/cyberark/postgres:1.4.1
-- https://gcr.io/conjur-cloud-launcher-onboard/cyberark/tester:1.4.1
-- https://gcr.io/conjur-cloud-launcher-onboard/cyberark/deployer:1.4.1
+- https://gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source:1.6.1
+- https://gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/deployer:1.6.1
+- https://gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/nginx:1.6.1
+- https://gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/postgres:1.6.1
+- https://gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/tester:1.6.1
+- https://gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/deployer:1.6.1
 
 ### Use of "Release Tracks"
 
@@ -347,37 +418,38 @@ section of the Google Cloud Marketplace [Setting up your Google Cloud environmen
 
 Each *track* is a series of patch semantic versions with backwards-compatible
 updates. The *track* is represented by a minor semantic version. For example,
-if the released *track* version is `1.4`, then versions `1.4.0`, `1.4.1`,
+if the released *track* version is `1.6`, then versions `1.6.0`, `1.6.1`,
 and so on are expected to be backwards-compatible with *track* version
-`1.4`.
+`1.6`.
 
 The *track* version is what Marketplace users would use to deploy the
 Marketplace application. Basically, the *track* version that the user sees
 is mapped to the latest published patch version of the application.
 
 Publishing a new version will therefore involve tagging and pushing of:
-- Tag/push for the latest release images using patch version (e.g. `1.4.1`)
-- Tag/push for the latest release images using track version (e.g. `1.4`)
+- Tag/push for the latest release images using patch version (e.g. `1.6.1`)
+- Tag/push for the latest release images using track version (e.g. `1.6`)
 
 ### Push a *Track* Version of the Images to the GCR Registry
 
 Push a "Track" Version of the Images to the GCR Registry:
 
 ```sh-session
-export NEW_VERSION=1.4.1
-export TRACK_VERSION=1.4
+export NEW_VERSION=1.6.1
+export TRACK_VERSION=1.6
 
-docker tag gcr.io/conjur-cloud-launcher-onboard/cyberark:$NEW_VERSION gcr.io/conjur-cloud-launcher-onboard/cyberark:$TRACK_VERSION
-docker tag gcr.io/conjur-cloud-launcher-onboard/cyberark/deployer:$NEW_VERSION gcr.io/conjur-cloud-launcher-onboard/cyberark/deployer:$TRACK_VERSION
-docker tag gcr.io/conjur-cloud-launcher-onboard/cyberark/nginx:$NEW_VERSION gcr.io/conjur-cloud-launcher-onboard/cyberark/nginx:$TRACK_VERSION
-docker tag gcr.io/conjur-cloud-launcher-onboard/cyberark/postgres:$NEW_VERSION gcr.io/conjur-cloud-launcher-onboard/cyberark/postgres:$TRACK_VERSION
-docker tag gcr.io/conjur-cloud-launcher-onboard/cyberark/tester:$NEW_VERSION gcr.io/conjur-cloud-launcher-onboard/cyberark/tester:$TRACK_VERSION
+export CONJUR_REPO="gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source"
+docker tag $CONJUR_REPO:$NEW_VERSION $CONJUR_REPO:$TRACK_VERSION
+docker tag $CONJUR_REPO/deployer:$NEW_VERSION $CONJUR_REPO/deployer:$TRACK_VERSION
+docker tag $CONJUR_REPO/nginx:$NEW_VERSION $CONJUR_REPO/nginx:$TRACK_VERSION
+docker tag $CONJUR_REPO/postgres:$NEW_VERSION $CONJUR_REPO/postgres:$TRACK_VERSION
+docker tag $CONJUR_REPO/tester:$NEW_VERSION $CONJUR_REPO/tester:$TRACK_VERSION
 
-docker push gcr.io/conjur-cloud-launcher-onboard/cyberark:$TRACK_VERSION
-docker push gcr.io/conjur-cloud-launcher-onboard/cyberark/deployer:$TRACK_VERSION
-docker push gcr.io/conjur-cloud-launcher-onboard/cyberark/nginx:$TRACK_VERSION
-docker push gcr.io/conjur-cloud-launcher-onboard/cyberark/postgres:$TRACK_VERSION
-docker push gcr.io/conjur-cloud-launcher-onboard/cyberark/tester:$TRACK_VERSION
+docker push $CONJUR_REPO:$TRACK_VERSION
+docker push $CONJUR_REPO/deployer:$TRACK_VERSION
+docker push $CONJUR_REPO/nginx:$TRACK_VERSION
+docker push $CONJUR_REPO/postgres:$TRACK_VERSION
+docker push $CONJUR_REPO/tester:$TRACK_VERSION
 ```
 
 ### Install the `mpdev` (Marketplace Development Tool) Script
@@ -446,19 +518,23 @@ https://cloud.google.com/marketplace/docs/partners/kubernetes-solutions/maintain
    The command to publish to the GS bucket is:
 
    ```sh-session
-   mpdev publish --deployer_image=gcr.io/YOUR-PUBLIC-PROJECT/COMPANY-IDENTIFIER/YOUR-APP/deployer:VERSION --gcs_repo=gs://YOUR-BUCKET/COMPANY-IDENTIFIER/YOUR-APP/TRACK
+   mpdev publish \
+         --deployer_image=gcr.io/YOUR-PUBLIC-PROJECT/COMPANY-IDENTIFIER/YOUR-APP/deployer:VERSION \
+         --gcs_repo=gs://YOUR-BUCKET/COMPANY-IDENTIFIER/YOUR-APP:TRACK
    ```
 
    For example:
 
    ```sh-session
-   mpdev publish --deployer_image=gcr.io/conjur-cloud-launcher-onboard/cyberark/deployer:1.4.1 --gcs_repo=gs://artifacts.conjur-cloud-launcher-onboard.appspot.com/cyberark:1.4
+   mpdev publish \
+         --deployer_image=gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/deployer:1.6.1 \
+         --gcs_repo=gs://artifacts.conjur-cloud-launcher-onboard.appspot.com/cyberark/conjur-open-source:1.6
    ```
 
    You should see a published URL in the output, for example:
 
    ```sh-session
-   Version is available at gs://artifacts.conjur-cloud-launcher-onboard.appspot.com/cyberark:1.4/1.4.1.yaml
+   Version is available at gs://artifacts.conjur-cloud-launcher-onboard.appspot.com/cyberark/conjur-open-source:1.6/1.6.1.yaml
    ```
 
 ### Install and Test the Published Application from the Cloud Storage Bucket
@@ -468,13 +544,17 @@ https://cloud.google.com/marketplace/docs/partners/kubernetes-solutions/maintain
    The reference command is:
 
    ```sh-session
-   mpdev install --version_meta_file=gs://YOUR-BUCKET/YOUR-COMPANY/YOUR-APP/TRACK/VERSION --parameters='{"name": "YOUR-APP-INSTANCE", "namespace": "YOUR-NAMESPACE" <APP-SPECIFIC-PARAMETERS> }'
+   mpdev install \
+         --version_meta_file=gs://YOUR-BUCKET/YOUR-COMPANY/YOUR-APP/TRACK/VERSION \
+         --parameters='{"name": "YOUR-APP-INSTANCE", "namespace": "YOUR-NAMESPACE" <APP-SPECIFIC-PARAMETERS> }'
    ```
 
    For example:
 
    ```sh-session
-   mpdev install --version_meta_file=gs://artifacts.conjur-cloud-launcher-onboard.appspot.com/cyberark:1.4/1.4.1.yaml --parameters='{"name": "conjur-test", "namespace": "conjur-test", "conjur-oss.ssl.hostname": "conjurtest.myorg.com"}'
+   mpdev install \
+         --version_meta_file=gs://artifacts.conjur-cloud-launcher-onboard.appspot.com/cyberark/conjur-open-source:1.6/1.6.1.yaml \
+         --parameters='{"name": "conjur-test", "namespace": "conjur-test", "conjur-oss.ssl.hostname": "conjurtest.myorg.com"}'
    ```
 
    You should see successful creation of app:
@@ -500,7 +580,8 @@ Run the following:
    echo "https://console.cloud.google.com/kubernetes/application/${ZONE}/${CLUSTER}/${NAMESPACE}/${APP_INSTANCE_NAME}"
    ```
 
-And then browse to the URL that is displayed. You should see a live status for the application.
+And then browse to the URL that is displayed. You should see a live status
+for the application.
 
 ### Delete the Application
 

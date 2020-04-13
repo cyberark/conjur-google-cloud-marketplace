@@ -79,37 +79,25 @@ community. The source code can be found on
 
 #### Configure the app with environment variables
 
-Choose the instance name and namespace for the app.
+Choose the namespace for the app.
 
 ```shell
-export APP_INSTANCE_NAME=conjur-1
 export NAMESPACE=conjur
+```
+
+Choose a DNS hostname to be used as a CA certificate common name:
+
+```shell
+export CERTIFICATE_CN=conjur.myorg.com
 ```
 
 Configure the container images:
 
 ```shell
-export TAG_VERSION=1.4.0
-export IMAGE_CONJUR="gcr.io/cloud-marketplace/cyberark/conjur-open-source:$TAG_VERSION"
-export IMAGE_POSTGRES="gcr.io/cloud-marketplace/cyberark/conjur-open-source/postgres:$TAG_VERSION"
-export IMAGE_NGINX="gcr.io/cloud-marketplace/cyberark/conjur-open-source/nginx:$TAG_VERSION"
-```
-
-The images above are referenced by
-[tag](https://docs.docker.com/engine/reference/commandline/tag). We recommend
-that you pin each image to an immutable
-[content digest](https://docs.docker.com/registry/spec/api/#content-digests).
-This ensures that the installed application always uses the same images,
-until you are ready to upgrade. To get the digest for the image, use the
-following script:
-
-```shell
-for i in "IMAGE_CONJUR" "IMAGE_POSTGRES" "IMAGE_NGINX"; do
-  repo=$(echo ${!i} | cut -d: -f1);
-  digest=$(docker pull ${!i} | sed -n -e 's/Digest: //p');
-  export $i="$repo@$digest";
-  env | grep $i;
-done
+export TAG_VERSION=$(cat VERSION)
+export CONJUR_REPO="gcr.io/cloud-marketplace/cyberark/conjur-open-source"
+export POSTGRES_REPO="$CONJUR_REPO/postgres"
+export NGINX_REPO="$CONJUR_REPO/nginx"
 ```
 
 #### Create namespace in your Kubernetes cluster
@@ -122,9 +110,9 @@ kubectl create namespace "$NAMESPACE"
 kubectl config set-context --current --namespace="$NAMESPACE"
 ```
 
-#### Install the application with Helm (v2) to your Kubernetes cluster
+#### Install the application with Helm (v2 or v3) to your Kubernetes cluster
 
-These instructions assume that your local `helm` client is version 2.
+These instructions assume that your local `helm` client is version 2 or version 3.
 
 This project uses the upstream [cyberark/conjur-oss Helm chart](https://github.com/cyberark/conjur-oss-helm-chart). (You do not need to clone or helm install this repo directly; this will be done indirectly via the helm install of conjur below.)
 
@@ -138,15 +126,46 @@ for all available upstream Helm chart parameters and their defaults.
 
 ```shell
 helm dependency update ./conjur
-helm install conjur --set conjur-oss.dataKey="$(docker run --rm cyberark/conjur data-key generate)" ./conjur
+helm install conjur \
+     --set conjur-oss.ssl.hostname="$CERTIFICATE_CN" \
+     --set conjur-oss.dataKey="$(docker run --rm cyberark/conjur data-key generate)" \
+     --set conjur-oss.image.repository="$CONJUR_REPO" \
+     --set conjur-oss.image.tag="$TAG_VERSION" \
+     --set conjur-oss.image.pullPolicy="Always" \
+     --set conjur-oss.nginx.image.repository="$NGINX_REPO" \
+     --set conjur-oss.nginx.image.tag="$TAG_VERSION" \
+     --set conjur-oss.nginx.image.pullPolicy="Always" \
+     --set conjur-oss.postgres.image.repository="$POSTGRES_REPO" \
+     --set conjur-oss.postgres.image.tag="$TAG_VERSION" \
+     --set conjur-oss.postgres.image.pullPolicy="Always" \
+     ./conjur
+```
+
+It may take a few minutes for the pods to come up in this installation.
+You can use `kubectl get pods` to monitor the pods until the are up:
+
+```shell
+$ kubectl get pods
+NAME                                READY   STATUS    RESTARTS   AGE
+conjur-conjur-oss-f689fc4db-cg7h4   2/2     Running   0          12m
+conjur-postgres-6d5b59789c-hz5qv    1/1     Running   0          12m
+$
 ```
 
 #### View the app in the Google Cloud Console
 
-To get the Console URL for your app, run the following command:
+Run the following commands until the `EXTERNAL-IP` column resolves:
 
 ```shell
-echo "https://console.cloud.google.com/kubernetes/application/${ZONE}/${CLUSTER}/${NAMESPACE}/${APP_INSTANCE_NAME}"
+INGRESS_SVC=$(kubectl get svc --no-headers -o custom-columns=":metadata.name" | grep conjur-oss-ingress)
+kubectl get svc $INGRESS_SVC
+```
+
+To get the Console URL for your app, run the following commands:
+
+```shell
+EXT_IP=$(kubectl get svc "$INGRESS_SVC" -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
+echo "https://$EXT_IP"
 ```
 
 To view the app, open the URL in your browser.
@@ -155,46 +174,79 @@ To view the app, open the URL in your browser.
 
 To initialize Conjur, an account must be created. This is done by executing a command on a Conjur pod. This only needs to be done when launching a new Conjur application, or creating a new Conjur account.
 
-```
-# Find conjur pod
-$ kubectl get po -l app=$name-conjur
-conjur-d76f44b64-rkxff   1/1       Running   0          16m
-
-# Create a Conjur account
-$ kubectl exec conjur-d76f44b64-rkxff -c conjur-oss conjurctl account create quick-start
-Created new account account 'quick-start'
+```shell
+# Find conjur pod and create a `default` account
+$ export POD_NAME=$(kubectl get pods \
+       -l "app=conjur-oss" \
+       -o jsonpath="{.items[0].metadata.name}")
+$ kubectl exec $POD_NAME --container=conjur-oss conjurctl account create default
 Token-Signing Public Key: -----BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAv9+iXUFZISHlZfGrkio5
-RG4hPijORLLMwNlHx7Bv0NMG2gFpwS25xDmBK2UgARlow+b9OS9spmLAdH15lXP5
-40HBkKX/aYnLCH55TC4T/GslyUiaLZocVn1nkExdnBYO+tbNjUUJnHp2tljfQKCD
-Lp+uqDlwbPDzUEqxPRj70ro0F8aeCVvjb0AQ7dHMnZ/FYYpJShxOwtn/FeaC+mhU
-85QlcrtN3kn+pAA9wxuoKpIN8DoCK506AftL5Dra9xdconneSZ4XhaweAzut0BLp
-Oi5nZFPVNXAUBJAg/RmmgO2C3J8zBS66wo3L7XAhJs/TXzhKYxHQKNa6GoWgc7uW
-RwIDAQAB
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA06mdosQTY76NLQTrgr7v
+jkNLZC/a9jiKgeRTSJkMf+nJBLOVGmGgSZeU+eqDs/1Ldz/XJLouRk6XbSR8kAAQ
+FtZbXFQKyyrRAJg3jN9DbB930FfyuBHpI/dPZVmKbBqiL4P8pwW9oj5ACzBgB1ZF
+yz5iDWbmNyvIaqoYvSKpB7PItISOSX7C88LtxDsPK+eMxQnlu2kEg++P7OG2SFSW
+EpVAd8v13QOUTG8u7dJ8LRJDBt7cBMagGAxp+cTRxvIGp63joBbn8Ca9rhZBMaeT
+i/cFSx2B05QepUEFTVIJtSyF6cLUnRiXnZXVk61aRNbWOTEK8dGvkIBFswXPAN8z
+/QIDAQAB
 -----END PUBLIC KEY-----
-API key for admin: r41crc30ys1hv3njzrvz30xq6k210ec4y61y5qmmj1xyb300btrxmer
+Created new account 'default'
+API key for admin: 1ma6hxgt6fagm52qgtn344xd1v1b7qrgp571fsm1250z6r3aewb9t
+$
 ```
 
 > Note that the `conjurctl account create` command gives you the public key and admin API key for the account you created. Back them up in a safe location.
 
-Run `kubectl get svc "$APP_INSTANCE_NAME-conjur"` until the `EXTERNAL-IP` column resolves.
 
 ### Connect remote with the Conjur CLI
 
-Now pull the latest [cyberark/conjur-cli:5 image](https://hub.docker.com/r/cyberark/conjur-cli/) and run it to connect to Conjur.
+Fetch the external IP for the Conjur service:
 
-> Note that you must use the DNS name you used in your deployment to connect to Conjur instead of the IP or you will get errors trying to log in.
-
+```shell
+INGRESS_SVC=$(kubectl get svc --no-headers -o custom-columns=":metadata.name" | grep conjur-oss-ingress)
+export EXT_IP=$(kubectl get svc "$INGRESS_SVC" -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
 ```
-$ docker pull cyberark/conjur-cli:5
-$ docker run --rm -it --entrypoint bash cyberark/conjur-cli:5
 
-# conjur init -u [EXTERNAL_IP] -a default # or whatever account you created
-# conjur authn login -u admin
+Pull and run the latest [cyberark/conjur-cli:5 image](https://hub.docker.com/r/cyberark/conjur-cli/) to connect to Conjur:
+
+```shell
+docker pull cyberark/conjur-cli:5
+docker run \
+       --rm -it \
+       --env EXT_IP \
+       --env CERTIFICATE_CN \
+       --entrypoint bash \
+       cyberark/conjur-cli:5
+```
+
+> Note that when connecting to the Conjur server, you must use hostname that
+matches one of the subject names that are contained in Conjur server's CA
+certificate, or you will get errors trying to log in. You can use the
+$CERTIFICATE_CN environment variable that you set earlier, since that has
+been configured as the CA certificate's subject common name.
+
+Set up a DNS A record to map the target hostname ($CERTIFICATE_CN) to the Conjur
+service's external IP, or alternatively, create a mapping entry in /etc/hosts:
+
+```shell
+grep -q $CERTIFICATE_CN /etc/hosts && \
+    sed -i "s/.*$CERTIFICATE_CN/$EXT_IP $CERTIFICATE_CN/" /etc/hosts || \
+    echo "$EXT_IP $CERTIFICATE_CN" >> /etc/hosts
+```
+
+Connect to the Conjur server using the account that you just created and login
+as user `admin`, using the admin API key returned earlier as a password:
+
+```shell
+$ conjur init -u https://$CERTIFICATE_CN -a default
+$ conjur authn login -u admin
 Please enter admin's password (it will not be echoed):
 Logged in
+```
 
-# conjur authn whoami
+Confirm that you are logged in as user `admin`:
+
+```shell
+$ conjur authn whoami
 {"account":"default","username":"admin"}
 ```
 
@@ -216,17 +268,24 @@ If you are using a remote database, no changes are needed.
 
 ## Upgrade Conjur
 
+If you haven't already, set your kubectl context to point to the namespace
+in which your Conjur application is running:
+
+```shell
+kubectl config set-context --current --namespace=<CONJUR-APP-NAMESPACE>
+```
+
 Set the new image version in an environment variable:
 
 ```shell
-export IMAGE_CONJUR=gcr.io/cloud-marketplace/cyberark/conjur-open-source:1.0
+export NEW_VERSION=1.6.1
+export IMAGE_CONJUR="gcr.io/cloud-marketplace/cyberark/conjur-open-source:$NEW_VERSION"
 ```
 
 Update the Deployment definition with the reference to the new image:
 
 ```shell
-kubectl patch deployment $APP_INSTANCE_NAME-conjur \
-  --namespace $NAMESPACE \
+kubectl patch deployment conjur-conjur-oss \
   --type='json' \
   --patch="[{ \
       \"op\": \"replace\", \
@@ -238,7 +297,8 @@ kubectl patch deployment $APP_INSTANCE_NAME-conjur \
 Monitor the process with:
 
 ```shell
-kubectl get pods -l "app.kubernetes.io/name=$APP_INSTANCE_NAME" \
+kubectl get pods \
+  -l "app=conjur-oss" \
   --output go-template='Status={{.status.phase}} Image={{(index .spec.containers 0).image}}' \
   --watch
 ```
@@ -274,11 +334,13 @@ release "conjur" uninstalled
 
 ## Contributing
 
-We welcome contributions of all kinds to this repository. For instructions on how to get started and descriptions of our development workflows, please see our [contributing
-guide][contrib].
+We welcome contributions of all kinds to this repository. For instructions on
+how to get started and descriptions of our development workflows, please see
+our [contributing guide][contrib].
 
 [contrib]: https://github.com/cyberark/conjur-google-cloud-marketplace/blob/master/CONTRIBUTING.md
 
 ## License
 
-This repository is licensed under Apache License 2.0 - see [`LICENSE`](LICENSE) for more details.
+This repository is licensed under Apache License 2.0 - see
+[`LICENSE`](LICENSE) for more details.

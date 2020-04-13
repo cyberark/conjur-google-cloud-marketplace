@@ -1,61 +1,16 @@
+# This schema file defines any properties and/or property defaults that
+# are required for testing that are not otherwise defined in the
+# application schema.yaml file in the project root directory.
+# (i.e. Properties from these two schema.yaml files are combined for testing.)
 x-google-marketplace:
   schemaVersion: v2
 
-  # Must match the version of the Application custom resource object.
-  applicationApiVersion: v1beta1
-
-  # The release version must match the release tag on the deployer
-  publishedVersion: '1.4.0'
-
   images:
-    postgres:
-      properties:
-        imageRepo:
-          type: REPO_WITH_REGISTRY
-        imageTag:
-          type: TAG
-    nginx:
-      properties:
-        imageRepo:
-          type: REPO_WITH_REGISTRY
-        imageTag:
-          type: TAG
     tester:
       properties:
-        imageRepo:
-          type: REPO_WITH_REGISTRY
-        imageTag:
-          type: TAG
-    init:
-      properties:
-        imageInitFull:
+        imageTester:
           type: FULL
-        imageInitRegistry:
-          type: REGISTRY
-        imageInitRepo:
-          type: REPO_WITHOUT_REGISTRY
-        imageInitTag:
-          type: TAG
-
-  clusterConstraints:
-    resources:
-    - requests:
-        cpu: 1000m
-        memory: 3750Mi
-      affinity:
-        simpleNodeAffinity:
-          type: REQUIRE_MINIMUM_NODE_COUNT
-          minimumNodeCount: 3
-
-  clusterConstraints:
-    resources:
-    - requests:
-        cpu: 1000m
-        memory: 3750Mi
-      affinity:
-        simpleNodeAffinity:
-          type: REQUIRE_MINIMUM_NODE_COUNT
-          minimumNodeCount: 3
+          default: $REGISTRY/tester:$TAG
 
 properties:
   tester.image:
@@ -64,17 +19,5 @@ properties:
 
   conjur-oss.ssl.hostname:
     type: string
-    default: "conjurtest.myorg.com"
+    default: "$CERTIFICATE_CN"
     title: Certificate Common Name
-
-required:
-- name
-- namespace
-- conjur.image
-- postgres.image
-- nginx.image
-- conjur-oss.dataKey
-- conjur-oss.persistentVolumeSize
-- conjur-oss.ssl.expiration
-- conjur-oss.ssl.hostname
-- conjur-oss.serviceAccount.name

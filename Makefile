@@ -22,39 +22,43 @@ include var.Makefile
 include app.Makefile
 
 NAME ?= conjur
-TAG ?= 1.4.0
+TAG ?= $(shell cat VERSION)
 REGISTRY ?= gcr.io/conjur-cloud-launcher-onboard
-PREFIX ?= cyberark
+COMPANY ?= cyberark
+APPLICATION ?= conjur-open-source
 
-# FLAT_REGISTRY allows contributors to use their own (flat hierarchy) Docker
-# registry
-FLAT_REGISTRY ?= false
-ifeq ($(FLAT_REGISTRY),true)
-  REGISTRY_PREFIX = $(REGISTRY)
-else
-  REGISTRY_PREFIX = $(REGISTRY)/$(PREFIX)
-endif
+# The following Conjur release image is used for (copied to) the Marketplace
+# application image. To minimize confusion, the minor (or "track") version
+# of the Marketplace application should match the minor version of the
+# Conjur release that it uses (e.g. both can have minor versions of 1.6).
+CONJUR_RELEASE_TAG ?= 1.6
+CONJUR_RELEASE_REPO ?= cyberark/conjur
+CONJUR_RELEASE_IMAGE ?= $(CONJUR_RELEASE_REPO):$(CONJUR_RELEASE_TAG)
 
-APP_DEPLOYER_IMAGE ?= $(REGISTRY_PREFIX)/deployer:$(TAG)
-CONJUR_IMAGE ?= $(REGISTRY)/$(PREFIX):$(TAG)
-POSTGRES_SOURCE_IMAGE ?= postgres:9.4
-POSTGRES_IMAGE ?= $(REGISTRY_PREFIX)/postgres:$(TAG)
-NGINX_SOURCE_IMAGE ?= nginx:1.17
-NGINX_IMAGE ?= $(REGISTRY_PREFIX)/nginx:$(TAG)
+APP_REPO ?= $(REGISTRY)/$(COMPANY)/$(APPLICATION)
+APP_IMAGE ?= $(APP_REPO):$(TAG)
 DEPLOYER_DOCKERFILE ?= deployer/Dockerfile
+APP_DEPLOYER_IMAGE ?= $(APP_REPO)/deployer:$(TAG)
+POSTGRES_SOURCE_IMAGE ?= postgres:10.1
+POSTGRES_IMAGE ?= $(APP_REPO)/postgres:$(TAG)
+NGINX_SOURCE_IMAGE ?= nginx:1.17
+NGINX_IMAGE ?= $(APP_REPO)/nginx:$(TAG)
 TESTER_DOCKERFILE ?= tester/Dockerfile
+TESTER_IMAGE ?= $(APP_REPO)/tester:$(TAG)
 
-$(info $$CONJUR_IMAGE is [${CONJUR_IMAGE}])
-$(info $$PREFIX is [${PREFIX}])
-$(info $$REGISTRY_PREFIX is [${REGISTRY_PREFIX}])
+$(info ---- COMPANY = ${COMPANY})
+$(info ---- APPLICATION = ${APPLICATION})
+$(info ---- TAG = ${TAG})
+$(info ---- APP_IMAGE = ${APP_IMAGE})
+$(info ---- CONJUR_RELEASE_IMAGE = ${CONJUR_RELEASE_IMAGE})
 
 APP_PARAMETERS ?= { \
   "name": "$(NAME)", \
   "namespace": "$(NAMESPACE)" \
 }
-TESTER_IMAGE ?= $(REGISTRY_PREFIX)/tester:$(TAG)
 APP_TEST_PARAMETERS ?= { \
-  "tester.image": "$(TESTER_IMAGE)" \
+  "tester.image": "$(TESTER_IMAGE)", \
+  "conjur-oss.ssl.hostname": "$(CERTIFICATE_CN)" \
 }
 
 # Extend the target as defined in app.Makefile to
@@ -84,7 +88,6 @@ app/build:: .build/conjur/deployer \
 	docker build \
 	    --build-arg REGISTRY="$(REGISTRY)" \
 	    --build-arg TAG="$(TAG)" \
-	    --build-arg CONJUR_OSS_PACKAGE="$(CONJUR_OSS_PACKAGE)" \
 	    --tag "$(APP_DEPLOYER_IMAGE)" \
 	    -f "$(DEPLOYER_DOCKERFILE)" \
 	    .
@@ -106,9 +109,9 @@ app/build:: .build/conjur/deployer \
                             .build/var/TAG \
                             | .build/conjur
 	$(call print_target, $@)
-	docker pull cyberark/conjur
-	docker tag cyberark/conjur "$(CONJUR_IMAGE)"
-	docker push "$(CONJUR_IMAGE)"
+	docker pull "$(CONJUR_RELEASE_IMAGE)"
+	docker tag "$(CONJUR_RELEASE_IMAGE)" "$(APP_IMAGE)"
+	docker push "$(APP_IMAGE)"
 	@touch "$@"
 
 # Relocate postgres image to $REGISTRY
