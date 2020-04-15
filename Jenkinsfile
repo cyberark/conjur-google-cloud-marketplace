@@ -79,7 +79,7 @@ pipeline {
          */
         stage('Scan deployer image for fixable vulns') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/deployer:${TAG}", "CRITICAL", false)
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/deployer:${TAG}", "HIGH", false)
           }
         }
         stage('Scan tester image for fixable vulns') {
@@ -89,32 +89,32 @@ pipeline {
         }
         stage('Scan nginx image for fixable vulns') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/nginx:${TAG}", "CRITICAL", false)
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/nginx:${TAG}", "HIGH", false)
           }
         }
         stage('Scan postgres image for fixable vulns') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/postgres:${TAG}", "CRITICAL", false)
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/postgres:${TAG}", "HIGH", false)
           }
         }
         stage('Scan deployer image') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/deployer:${TAG}", "CRITICAL", true)
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/deployer:${TAG}", "NONE", true)
           }
         }
         stage('Scan tester image') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/tester:${TAG}", "HIGH", true)
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/tester:${TAG}", "NONE", true)
           }
         }
         stage('Scan nginx image') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/nginx:${TAG}", "CRITICAL", true)
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/nginx:${TAG}", "NONE", true)
           }
         }
         stage('Scan postgres image') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/postgres:${TAG}", "CRITICAL", true)
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/postgres:${TAG}", "NONE", true)
           }
         }
       }
