@@ -71,26 +71,50 @@ pipeline {
       parallel {
         /*
          * A scan of the conjur image is skipped since this image is scanned
-         * vulnerabilities for builds in the cyberark/conjur repository.
+         * vulnerabilities for builds in the cyberark/conjur repository and we
+         * make no changes to the container here.
+         *
+         * `false` in the 3rd parameter to scanAndReport means to ignore issues
+         * with no fix. `true` means to include those issues in the report.
          */
-        stage('Scan deployer image') {
+        stage('Scan deployer image for fixable issues') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/deployer:${TAG}", "CRITICAL")
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/deployer:${TAG}", "HIGH", false)
           }
         }
-        stage('Scan tester image') {
+        stage('Scan deployer image for all issues') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/tester:${TAG}", "HIGH")
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/deployer:${TAG}", "NONE", true)
           }
         }
-        stage('Scan nginx image') {
+        stage('Scan tester image for fixable issues') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/nginx:${TAG}", "CRITICAL")
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/tester:${TAG}", "HIGH", false)
           }
         }
-        stage('Scan postgres image') {
+        stage('Scan tester image for all issues') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/postgres:${TAG}", "CRITICAL")
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/tester:${TAG}", "NONE", true)
+          }
+        }
+        stage('Scan nginx image for fixable issues') {
+          steps {
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/nginx:${TAG}", "HIGH", false)
+          }
+        }
+        stage('Scan nginx image for all issues') {
+          steps {
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/nginx:${TAG}", "NONE", true)
+          }
+        }
+        stage('Scan postgres image for fixable issues') {
+          steps {
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/postgres:${TAG}", "HIGH", false)
+          }
+        }
+        stage('Scan postgres image for all issues') {
+          steps {
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/postgres:${TAG}", "NONE", true)
           }
         }
       }
