@@ -1,5 +1,5 @@
-FROM bash:5.0.16
+FROM alpine:3.11.6
 
 RUN apk add --no-cache curl
 
-CMD ["bash"]
+CMD ["sh"]
