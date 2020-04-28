@@ -13,7 +13,7 @@ metadata:
 spec:
   descriptor:
     type: Conjur
-    version: '1.4.0'
+    version: "{{ .Values.conjur.application.version }}"
     description: |-
       CyberArk Conjur automatically secures secrets used by privileged users and machine identities.
 
@@ -30,36 +30,45 @@ spec:
       # Access Conjur
 
       Get the external IP of the Conjur service and visit
-        the URL printed below in your browser to see the status page.
+      the URL printed below in your browser to see the status page.
 
-        ```
-        SERVICE_IP=$(kubectl get \
-          --namespace {{ .Release.Namespace }} \
-          svc {{ .Release.Name }}-conjur-oss-ingress \
-          -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+      ```
+      SERVICE_IP=$(kubectl get \
+        --namespace {{ .Release.Namespace }} \
+        svc {{ .Release.Name }}-conjur-oss-ingress \
+        -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+      echo "https://${SERVICE_IP}"
 
-        echo "https://${SERVICE_IP}"
-        ```
+      ```
 
-        Note that it might take some time for the external IP to be provisioned.
-        Once provisioned, create an A record mapping this IP to the common name
-        specified during configuration.
+      Note that it might take some time for the external IP to be provisioned.
+      Once provisioned, create an A record mapping this IP to the common name:
+
+      ```
+      {{ index .Values "conjur-oss" "ssl" "hostname" }}
+
+      ```
+
+      that was specified in the `Certificate Common Name` field during configuration.
+
+      NOTE: This `Certificate Common Name` should not have a trailing `/` character.
 
       # Configure Conjur
 
       To create an initial account and login, follow the instructions here:
-        https://www.conjur.org/get-started/install-conjur.html#install-and-configure
+      <https://www.conjur.org/get-started/install-conjur.html#install-and-configure>
 
-        ```
-        export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} \
-                                          -l "app=conjur-oss,release={{ .Release.Name }}" \
-                                          -o jsonpath="{.items[0].metadata.name}")
-        kubectl exec -n {{ .Release.Namespace }} $POD_NAME --container=conjur-oss conjurctl account create {{ index .Values "conjur-oss" "account" | quote }}
-        ```
+      ```
+      export POD_NAME=$(kubectl get pods --namespace "{{ .Release.Namespace }}" \
+                                        -l "app=conjur-oss,release={{ .Release.Name }}" \
+                                        -o jsonpath="{.items[0].metadata.name}")
+      kubectl exec -n {{ .Release.Namespace }} $POD_NAME --container=conjur-oss conjurctl account create {{ index .Values "conjur-oss" "account" | quote }}
 
-        Note that the conjurctl account create command gives you the
-        public key and admin API key for the account administrator you created.
-        Back them up in a safe location.
+      ```
+
+      Note that the conjurctl account create command gives you the
+      public key and admin API key for the account administrator you created.
+      Back them up in a safe location.
 
       # Connect to Conjur
 
@@ -68,18 +77,18 @@ spec:
       ```
       docker run --rm -it --entrypoint bash cyberark/conjur-cli:5
 
-      # Here ENDPOINT is the DNS name https endpoint for your Conjur service.
-      # NOTE: Ensure that the target endpoint matches at least one of the expected server
-      #       SSL certificate names otherwise SSL verification will fail and you will not
-      #       be able to log in.
-      # NOTE: Also ensure that the URL does not contain a slash (`/`) at the end of the URL
-      conjur init -u <ENDPOINT> -a {{ index .Values "conjur-oss" "account" | quote }}
+      # Initialize a connection to the Conjur server. (This assumes that
+      # you've created a DNS A Record for the Certificate common name
+      # {{ index .Values "conjur-oss" "ssl" "hostname" }}
+      # as described above).
+      conjur init -u https://{{ index .Values "conjur-oss" "ssl" "hostname" }} -a {{ index .Values "conjur-oss" "account" | quote }}
 
       # API key here is the key that creation of the account provided you in step #2
       conjur authn login -u admin -p <API_KEY>
 
       # Check that you are identified as the admin user
       conjur authn whoami
+
       ```
 
       # Next Steps

@@ -7,13 +7,34 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 ### Changed
-- Updated the Google Marketplace schema we use to Version 2, which will soon be [required for all apps](https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/c3e25deb4b40500e7416f3126c216a0f6a90d461/docs/schema.md#overview). [PR #30](https://github.com/cyberark/conjur-google-cloud-marketplace/pull/30)
+- Updated the Google Marketplace schema we use to Version 2, which will soon be
+[required for all apps](https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/c3e25deb4b40500e7416f3126c216a0f6a90d461/docs/schema.md#overview).
+[PR #30](https://github.com/cyberark/conjur-google-cloud-marketplace/pull/30)
+- The version of Conjur OSS used by the Marketplace app is bumped to 1.6.0.
+[PR #44](https://github.com/cyberark/conjur-google-cloud-marketplace/pull/44)
+- The README.md is updated and more detailed instructions have been added.
+[PR #44](https://github.com/cyberark/conjur-google-cloud-marketplace/pull/44)
 
 ### Fixed
-- Project deployment tools are updated to enable deploying on Kubernetes v1.15+ [cyberark/conjur-google-cloud-marketplace#25](https://github.com/cyberark/conjur-google-cloud-marketplace/issues/25). This includes upgrading the Google Marketplace Tools container image used by the Deployer from 0.7.0 to 0.10.0 to enable adaptive Kubectl client binary version selection, upgrading the version of Helm used by the deployer from 2.6.1 to 2.16.1 to address a [Helm bug](https://github.com/helm/helm/issues/2998), and fixing the deployment's `deploy-info` manifest annotations to use valid JSON keys (i.e. with quotes).
+- Project deployment tools are updated to enable deploying on Kubernetes v1.15+
+[cyberark/conjur-google-cloud-marketplace#25](https://github.com/cyberark/conjur-google-cloud-marketplace/issues/25).
+This includes upgrading the Google Marketplace Tools container image used by
+the Deployer from 0.7.0 to 0.10.0 to enable adaptive Kubectl client binary
+version selection, upgrading the version of Helm used by the deployer from
+2.6.1 to 2.16.1 to address a
+[Helm bug](https://github.com/helm/helm/issues/2998),
+and fixing the deployment's `deploy-info` manifest annotations to use valid
+JSON keys (i.e. with quotes).
 
 ### Security
-- Versions of the `postgres` (v9.4), `nginx` (v1.17), and `deployer_helm` (v0.10.1) containers were updated to address security vulnerabilities. [Trivy](https://github.com/aquasecurity/trivy) scanning was added to the pipeline to ensure the maintainer team is alerted to new fixable vulnerabilities early going forward. [cyberark/conjur-google-cloud-marketplace#35](https://github.com/cyberark/conjur-google-cloud-marketplace/issues/35), [cyberark/conjur-google-cloud-marketplace#33](https://github.com/cyberark/conjur-google-cloud-marketplace/issues/33), [cyberark/conjur-google-cloud-marketplace#34](https://github.com/cyberark/conjur-google-cloud-marketplace/issues/34)
+- Versions of the `nginx` (v1.17) and `deployer_helm` (v0.10.1) containers
+were updated to address security vulnerabilities.
+[Trivy](https://github.com/aquasecurity/trivy) scanning was added to the
+pipeline to ensure the maintainer team is alerted to new fixable
+vulnerabilities early going forward.
+[cyberark/conjur-google-cloud-marketplace#35](https://github.com/cyberark/conjur-google-cloud-marketplace/issues/35),
+[cyberark/conjur-google-cloud-marketplace#33](https://github.com/cyberark/conjur-google-cloud-marketplace/issues/33),
+[cyberark/conjur-google-cloud-marketplace#34](https://github.com/cyberark/conjur-google-cloud-marketplace/issues/34)
 
 ## [1.3.4](https://github.com/cyberark/conjur-google-cloud-launcher/releases/tag/v1.3.4) - 2019-01-08
 ### Changed
