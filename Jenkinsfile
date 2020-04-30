@@ -79,42 +79,46 @@ pipeline {
          */
         stage('Scan deployer image for fixable issues') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/deployer:${TAG}", "HIGH", false)
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/deployer:${TAG}", "HIGH", false)
           }
         }
         stage('Scan deployer image for all issues') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/deployer:${TAG}", "NONE", true)
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/deployer:${TAG}", "NONE", true)
           }
         }
         stage('Scan tester image for fixable issues') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/tester:${TAG}", "HIGH", false)
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/tester:${TAG}", "HIGH", false)
           }
         }
         stage('Scan tester image for all issues') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/tester:${TAG}", "NONE", true)
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/tester:${TAG}", "NONE", true)
           }
         }
         stage('Scan nginx image for fixable issues') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/nginx:${TAG}", "HIGH", false)
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/nginx:${TAG}", "HIGH", false)
           }
         }
         stage('Scan nginx image for all issues') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/nginx:${TAG}", "NONE", true)
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/nginx:${TAG}", "NONE", true)
           }
         }
-        stage('Scan postgres image for fixable issues') {
-          steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/postgres:${TAG}", "HIGH", false)
-          }
-        }
+        /*
+         * TODO: Re-enable the following scan after postgres image is upgraded
+         * to postgres:10.12
+         * stage('Scan postgres image for fixable issues') {
+         *   steps {
+         *     scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/postgres:${TAG}", "HIGH", false)
+         *   }
+         * }
+         */
         stage('Scan postgres image for all issues') {
           steps {
-            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/postgres:${TAG}", "NONE", true)
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/postgres:${TAG}", "NONE", true)
           }
         }
       }
