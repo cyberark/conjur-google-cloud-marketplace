@@ -1,4 +1,5 @@
 #!/usr/bin/env groovy
+@Library('conjur@vulns-not-always-failing') _
 
 import groovy.transform.Field
 
