@@ -327,29 +327,20 @@ kubectl delete $NAMESPACE
 ### Update the version and changelog
 
 1. Create a new branch for the version bump.
-1. View the current published version, and determine a new version number:
+
+1. Edit the `VERSION` file to find the current published version, and
+   replace that version with a new version. For example, if the
+   current published version is `1.6.0`, then  an acceptable new
+   version would be `1.6.1`.
+
+1. In CHANGELOG.md, move all entries currently in the `UNRELEASED` section to
+   a new section that is prefaced with the new version in square brackets, e.g.:
 
    ```sh-session
-   $ cat VERSION
-   1.6.0
-   $
+   ## [x.y.z](https://github.com/cyberark/conjur-google-cloud-launcher/releases/tag/v1.6.1) - 2020-04-18
    ```
 
-   In the above example, version `1.6.1` would be an acceptable new
-   version number.
-1. Update the VERSION file with the new version:
-
-   ```sh-session
-   $ echo 1.6.1 > VERSION
-   $
-   ```
-
-1. In CHANGELOG.md, move all entries currently in the `UNRELEASED` section
-   to a new section with a header similar to the following:
-
-   ```sh-session
-   ## [1.6.1](https://github.com/cyberark/conjur-google-cloud-launcher/releases/tag/v1.6.1) - 2020-04-18
-   ```
+   Where `x.y.z` represents the new version.
 
 1. Commit these changes - `Bump version to x.y.z` is an acceptable commit
    message - and open a PR for review. Your PR should include updates to
@@ -365,8 +356,8 @@ images.
 ### Add a git tag
 
 1. Once your changes have been reviewed and merged into master, tag the version
-   using e.g. `git tag -s v1.6.1`. Note this requires you to be able to sign
-   releases. Consult the
+   using e.g. `git tag -s vx.y.z`, where `x.y.z` represents the new version.
+   Note this requires you to be able to sign releases. Consult the
    [github documentation on signing commits](https://help.github.com/articles/signing-commits-with-gpg/)
    on how to set this up. `vx.y.z` is an acceptable tag message.
 1. Push the tag: `git push vx.y.z` (or `git push origin vx.y.z` if you are working
@@ -395,20 +386,6 @@ above, publishing images to the Google Marketplace will require:
 - Access to the `conjur-cloud-launcher-onboard` Google Cloud Platform (GCP) project
 - Access to the `cyberark-public` GCP project
 
-### Check for Vulnerabilities in Images Pushed to GCR
-
-In a browser, navigate to the GCR image locations corresponding to the
-versions you would like to publish, and click on the `Vulnerabilities`
-button to check for vulnerabilies. For example, for release 1.6.1, the
-image information would be found here:
-
-- https://gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source:1.6.1
-- https://gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/deployer:1.6.1
-- https://gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/nginx:1.6.1
-- https://gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/postgres:1.6.1
-- https://gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/tester:1.6.1
-- https://gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/deployer:1.6.1
-
 ### Use of "Release Tracks"
 
 The Conjur Google Marketplace Application follows the recommended
@@ -419,7 +396,7 @@ section of the Google Cloud Marketplace [Setting up your Google Cloud environmen
 Each *track* is a series of patch semantic versions with backwards-compatible
 updates. The *track* is represented by a minor semantic version. For example,
 if the released *track* version is `1.6`, then versions `1.6.0`, `1.6.1`,
-and so on are expected to be backwards-compatible with *track* version
+and so on are expected to be backwards-compatible with current *track* version
 `1.6`.
 
 The *track* version is what Marketplace users would use to deploy the
@@ -427,18 +404,20 @@ Marketplace application. Basically, the *track* version that the user sees
 is mapped to the latest published patch version of the application.
 
 Publishing a new version will therefore involve tagging and pushing of:
-- Tag/push for the latest release images using patch version (e.g. `1.6.1`)
-- Tag/push for the latest release images using track version (e.g. `1.6`)
+- Tag/push for the latest release images using patch version `x.y.z`
+- Tag/push for the latest release images using track version `x.y`
+where `x.y.z` and `x.y` represent the latest version and track version,
+respectively.
 
 ### Push a *Track* Version of the Images to the GCR Registry
 
 Push a "Track" Version of the Images to the GCR Registry:
 
 ```sh-session
-export NEW_VERSION=1.6.1
-export TRACK_VERSION=1.6
+export NEW_VERSION=x.y.z  # Replace x.y.z with new version
+export TRACK_VERSION=x.y  # Replace x.y with track version
 
-export CONJUR_REPO="gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source"
+export CONJUR_REPO="gcr.io/conjur-cloud-launcher-onboard/cyberark"
 docker tag $CONJUR_REPO:$NEW_VERSION $CONJUR_REPO:$TRACK_VERSION
 docker tag $CONJUR_REPO/deployer:$NEW_VERSION $CONJUR_REPO/deployer:$TRACK_VERSION
 docker tag $CONJUR_REPO/nginx:$NEW_VERSION $CONJUR_REPO/nginx:$TRACK_VERSION
@@ -519,23 +498,27 @@ https://cloud.google.com/marketplace/docs/partners/kubernetes-solutions/maintain
 
    ```sh-session
    mpdev publish \
-         --deployer_image=gcr.io/YOUR-PUBLIC-PROJECT/COMPANY-IDENTIFIER/YOUR-APP/deployer:VERSION \
-         --gcs_repo=gs://YOUR-BUCKET/COMPANY-IDENTIFIER/YOUR-APP:TRACK
+         --deployer_image=gcr.io/YOUR-PUBLIC-PROJECT/COMPANY-IDENTIFIER/deployer:VERSION \
+         --gcs_repo=gs://YOUR-BUCKET/COMPANY-IDENTIFIER:TRACK
    ```
 
-   For example:
+   For example (replace `x.y.z` and `x.y` with the new version and track
+   version respectively):
 
    ```sh-session
    mpdev publish \
-         --deployer_image=gcr.io/conjur-cloud-launcher-onboard/cyberark/conjur-open-source/deployer:1.6.1 \
-         --gcs_repo=gs://artifacts.conjur-cloud-launcher-onboard.appspot.com/cyberark/conjur-open-source:1.6
+         --deployer_image=gcr.io/conjur-cloud-launcher-onboard/cyberark/deployer:x.y.z \
+         --gcs_repo=gs://artifacts.conjur-cloud-launcher-onboard.appspot.com/cyberark:x.y
    ```
 
    You should see a published URL in the output, for example:
 
    ```sh-session
-   Version is available at gs://artifacts.conjur-cloud-launcher-onboard.appspot.com/cyberark/conjur-open-source:1.6/1.6.1.yaml
+   Version is available at gs://artifacts.conjur-cloud-launcher-onboard.appspot.com/cyberark:x.y/x.y.z.yaml
    ```
+
+   where `x.y.z` and `x.y` represent the new version and track version,
+   respectively.
 
 ### Install and Test the Published Application from the Cloud Storage Bucket
 
@@ -545,7 +528,7 @@ https://cloud.google.com/marketplace/docs/partners/kubernetes-solutions/maintain
 
    ```sh-session
    mpdev install \
-         --version_meta_file=gs://YOUR-BUCKET/YOUR-COMPANY/YOUR-APP/TRACK/VERSION \
+         --version_meta_file=gs://YOUR-BUCKET/YOUR-COMPANY/TRACK/VERSION \
          --parameters='{"name": "YOUR-APP-INSTANCE", "namespace": "YOUR-NAMESPACE" <APP-SPECIFIC-PARAMETERS> }'
    ```
 
@@ -553,7 +536,7 @@ https://cloud.google.com/marketplace/docs/partners/kubernetes-solutions/maintain
 
    ```sh-session
    mpdev install \
-         --version_meta_file=gs://artifacts.conjur-cloud-launcher-onboard.appspot.com/cyberark/conjur-open-source:1.6/1.6.1.yaml \
+         --version_meta_file=gs://artifacts.conjur-cloud-launcher-onboard.appspot.com/cyberark:1.6/1.6.1.yaml \
          --parameters='{"name": "conjur-test", "namespace": "conjur-test", "conjur-oss.ssl.hostname": "conjurtest.myorg.com"}'
    ```
 

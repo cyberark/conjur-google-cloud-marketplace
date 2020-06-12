@@ -50,13 +50,14 @@ if [ "${chart_dir}" != "" ]; then
 fi
 
 echo "Getting the desired marketplace Docker image..."
-MARKETPLACE_TOOLS_TAG="0.10.0"
+MARKETPLACE_TOOLS_TAG="0.9.10"
 LOCAL_MARKETPLACE_TOOLS_TAG="local-$USER"
 docker pull "gcr.io/cloud-marketplace-tools/k8s/dev:$MARKETPLACE_TOOLS_TAG"
 docker tag "gcr.io/cloud-marketplace-tools/k8s/dev:$MARKETPLACE_TOOLS_TAG" \
            "gcr.io/cloud-marketplace-tools/k8s/dev:$LOCAL_MARKETPLACE_TOOLS_TAG"
 
 echo "Building $build_target app..."
+export DEPLOYER_BASE_TAG="$MARKETPLACE_TOOLS_TAG"
 make -j4 -e "$build_target"
 
 echo "Done!"

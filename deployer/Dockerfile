@@ -1,3 +1,4 @@
+ARG DEPLOYER_BASE_TAG=0.9.10
 FROM launcher.gcr.io/google/debian9 AS build
 
 # Cachebuster is used to forcefully invalidate the cache when needed
@@ -43,7 +44,7 @@ RUN cat /tmp/test/schema.yaml \
     && mv /tmp/test/schema.yaml.new /tmp/test/schema.yaml
 
 
-FROM gcr.io/cloud-marketplace-tools/k8s/deployer_helm:0.10.1
+FROM gcr.io/cloud-marketplace-tools/k8s/deployer_helm:$DEPLOYER_BASE_TAG
 COPY --from=build /tmp/conjur.tar.gz /data/chart/
 COPY --from=build /tmp/test/conjur.tar.gz /data-test/chart/
 COPY --from=build /tmp/schema.yaml /data/
