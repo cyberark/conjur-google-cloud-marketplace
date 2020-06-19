@@ -1,5 +1,14 @@
 # Overview
 
+----
+**NOTICE: This project has no releases compatible with current K8s versions or latest releases
+of Conjur OSS. Please consider other [deployment methods](https://docs.conjur.org/Latest/en/Content/OSS/Installation/Install_methods.htm) instead - in particular, consider deploying using the
+[helm chart](https://github.com/cyberark/conjur-oss-helm-chart) directly.**
+
+If you have any questions, please contact the maintainers on [Discourse](https://discuss.cyberarkcommons.org).
+
+----
+
 CyberArk Conjur automatically secures secrets used by privileged users and machine identities.
 
 [Learn more.](https://www.conjur.org)
