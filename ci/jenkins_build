@@ -1,58 +1,199 @@
 #!/bin/bash
 set -euo pipefail
 
-TOOLS_IMAGE_NAME="conjur-gke-marketplace-kubectl"
-TMP_DIR="$(pwd)/.tmp"
-BIN_DIR="${TMP_DIR}/bin"
+source utils
 
-mkdir -p "${BIN_DIR}"
-mkdir -p "${TMP_DIR}/.kube"
-mkdir -p "${TMP_DIR}/.config"
+WAIT_TIMEOUT="${WAIT_TIMEOUT:-600}"
 
-cat > "${BIN_DIR}/kubectl" <<EOF
+status_poll_interval=4
+deletion_timeout=180
+tmp_dir="$(pwd)/.tmp"
+bin_dir="${tmp_dir}/bin"
+display_manifests=true
+namespace_deleted=false
+tools_image_name="conjur-gke-marketplace-kubectl"
+
+export NAME="conjur"
+export NAMESPACE="$NAME-$(random_string)"
+export KUBE_CONFIG="${tmp_dir}/.kube/config"
+export GCLOUD_CONFIG="${tmp_dir}/.config/gcloud"
+deployer_name="${NAME}-deployer"
+
+mkdir -p "${bin_dir}"
+mkdir -p "${tmp_dir}/.kube"
+mkdir -p "${tmp_dir}/.config"
+
+announce "Building kubectl image..."
+cat > "${bin_dir}/kubectl" <<EOF
   docker run --rm \
-    -v "${TMP_DIR}/.kube:/root/.kube" \
-    -v "${TMP_DIR}/.config:/root/.config" \
+    -v "${tmp_dir}/.kube:/root/.kube" \
+    -v "${tmp_dir}/.config:/root/.config" \
     --entrypoint /usr/local/bin/kubectl \
-    "${TOOLS_IMAGE_NAME}" \
+    "${tools_image_name}" \
     "\$@"
 EOF
-chmod +x "${BIN_DIR}/kubectl"
+chmod +x "${bin_dir}/kubectl"
 
-cat > "${BIN_DIR}/gcloud" <<EOF
+cat > "${bin_dir}/gcloud" <<EOF
   docker run --rm \
     --ipc="host" \
-    -v "${TMP_DIR}/.kube:/root/.kube" \
-    -v "${TMP_DIR}/.config:/root/.config" \
+    -v "${tmp_dir}/.kube:/root/.kube" \
+    -v "${tmp_dir}/.config:/root/.config" \
     --entrypoint /usr/bin/gcloud \
-    "${TOOLS_IMAGE_NAME}" \
+    "${tools_image_name}" \
     "\$@"
 EOF
-chmod +x "${BIN_DIR}/gcloud"
+chmod +x "${bin_dir}/gcloud"
 
-export PATH="${BIN_DIR}:${PATH}"
+export PATH="${bin_dir}:${PATH}"
 
-echo "Building kubectl image..."
 docker pull google/cloud-sdk
-docker build -t "${TOOLS_IMAGE_NAME}" \
+docker build -t "${tools_image_name}" \
              -f Dockerfile \
              .
 
+announce "Logging in to GCP..."
 ./platform_login
-
-export KUBE_CONFIG="${TMP_DIR}/.kube/config"
-export GCLOUD_CONFIG="${TMP_DIR}/.config/gcloud"
 
 # Fix permissions on files created within Docker
 docker run --rm \
-    -v "${TMP_DIR}/.kube:/root/.kube" \
-    -v "${TMP_DIR}/.config:/root/.config" \
-    "${TOOLS_IMAGE_NAME}" \
-    bash -c "chown ${UID} -R /root/.kube/config /root/.config/*"
+      -v "${tmp_dir}/.kube:/root/.kube" \
+      -v "${tmp_dir}/.config:/root/.config" \
+      "${tools_image_name}" \
+      bash -c "chown ${UID} -R /root/.kube/config /root/.config/*"
 
-echo "Running build and tests..."
-pushd ../
-  trap popd EXIT
-  ./build.sh
-  trap - EXIT
-popd
+function delete_namespace() {
+  if [[ "$namespace_deleted" == false ]]; then
+    if [[ -n $deployer_name ]]; then
+      announce "Collecting logs for deployer"
+      if deployer_logs="$(kubectl logs "jobs/$deployer_name" \
+              --namespace="$NAMESPACE" \
+              --tail 9999)"; then
+          echo "$deployer_logs"
+      else 
+          echo "ERROR Failed to get logs for deployer $deployer_name"
+      fi
+      deployer_name=""
+    fi
+
+    if [[ "$display_manifests" == true ]]; then
+      announce "Displaying manifests from namespace \"$NAMESPACE\""
+      kubectl get all --namespace "$NAMESPACE" --output=yaml
+    fi
+
+    announce "Deleting namespace \"$NAMESPACE\""
+    kubectl delete namespace "$NAMESPACE" --ignore-not-found
+    namespace_deleted="true"
+  fi
+}
+
+function clean_and_exit() {
+  if [[ -n "$1" ]]; then
+    announce "ERROR $1"
+  fi
+  delete_namespace
+  exit 1
+}
+
+function wait_for_deletion() {
+  kind="$1"
+  timeout="$2"
+  start_time=$(date +%s)
+
+  while true; do
+    # Everything under the namespace needs to be removed after app/uninstall
+    echo "INFO Checking if $kind were deleted"
+    resources=$(kubectl get $kind \
+      --namespace="$NAMESPACE" \
+      -o=json \
+      | jq -r '.items[] | "\(.kind)/\(.metadata.name)"')
+
+    res_count=$(echo $resources | wc -w)
+
+    if [[ "$res_count" -eq 0 ]]; then
+      break
+    fi
+
+    # Ignore service account default
+    if [[ "$resources" = "ServiceAccount/default" ]]; then
+      break
+    fi
+
+    echo "INFO Remaining: $res_count"
+    echo "INFO $resources"
+
+    elapsed_time=$(( $(date +%s) - $start_time ))
+    if [[ "$elapsed_time" -gt "$timeout" ]]; then
+      exit 1
+    fi
+
+    sleep "$status_poll_interval"
+
+  done
+}
+
+announce "Creating namespace $NAMESPACE"
+kubectl create namespace "$NAMESPACE"
+trap delete_namespace EXIT
+
+announce "Deploying Conjur application"
+cd ..
+./build.sh --persist
+
+announce "Waiting for deployer to complete..."
+start_time=$(date +%s)
+while true; do
+  deployer_status=$(kubectl get "jobs/$deployer_name" \
+                    --namespace="$NAMESPACE" -o=json | \
+                    jq '.status' || echo "{}")
+  failure=$(echo $deployer_status | jq '.failed // empty')
+  if [ -n "$failure" ]; then
+    clean_and_exit "Deployer failed"
+  fi
+
+  success=$(echo $deployer_status | jq '.succeeded // empty')
+  if [ -n "$success" ]; then
+    echo "INFO Deployer job succeeded"
+    break
+  fi
+
+  elapsed_time=$(( $(date +%s) - $start_time ))
+  echo "Elapsed $elapsed_time secs"
+  if [[ "$elapsed_time" -gt "$WAIT_TIMEOUT" ]]; then
+    clean_and_exit "Deployer job timeout"
+  fi
+
+  sleep "$status_poll_interval"
+done
+
+announce "Checking test results"
+pods=$(kubectl get pods \
+       --namespace="$NAMESPACE" \
+       --selector "app.kubernetes.io/name=conjur" \
+       --field-selector=status.phase=Failed \
+       --output=jsonpath={.items..metadata.name})
+if [ -n "$pods" ]; then
+    clean_and_exit "Test failed. Found failed pods: [$pods]"
+fi
+
+announce "Tests passed, collecting logs"
+# Set deployer name to empty after collecting logs so clean up doesn't try
+# to collect logs again.
+if ! kubectl logs "jobs/$deployer_name" --namespace="$NAMESPACE"; then
+    deployer_name=""
+    clean_and_exit "Failed to get logs for deployer $deployer_name"
+fi
+deployer_name=""
+
+announce "Delete the \"$NAME\" application"
+if ! kubectl delete "application/$NAME" --namespace="$NAMESPACE"; then
+    clean_and_exit "Failed to stop application"
+fi
+
+announce "Wait for the application to be deleted"
+if ! wait_for_deletion "applications.app.k8s.io" "$deletion_timeout"; then
+    clean_and_exit "Application was not deleted"
+fi
+
+announce "                 SUCCESS"
+display_manifests=false
