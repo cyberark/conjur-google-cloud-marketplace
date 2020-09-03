@@ -1,9 +1,10 @@
 # Contributing to the Conjur Google Cloud Marketplace Application
 
-Thank you for your interest in the Conjur Google Cloud Marketplace Application. Before contributing, please take a moment to read and sign our [Contributor Agreement](https://github.com/cyberark/community/blob/master/documents/CyberArk_Open_Source_Contributor_Agreement.pdf).
-This provides patent protection for all Secretless Broker users and allows CyberArk to enforce its license terms. Please email a signed copy to oss@cyberark.com.
+Thank you for your interest in the Conjur Google Cloud Marketplace Application.
 
-For general contribution and community guidelines, please see the [CyberArk community repo](https://github.com/cyberark/community).
+For general contribution and community guidelines, please see the [community repo](https://github.com/cyberark/community).
+In particular, before contributing please review our [contributor licensing guide](https://github.com/cyberark/community/blob/master/CONTRIBUTING.md#when-the-repo-does-not-include-the-cla)
+to ensure your contribution is compliant with our contributor license agreements.
 
 ## Table of Contents
 
