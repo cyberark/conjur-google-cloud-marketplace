@@ -107,15 +107,11 @@ pipeline {
             scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/nginx:${TAG}", "NONE", true)
           }
         }
-        /*
-         * TODO: Re-enable the following scan after postgres image is upgraded
-         * to postgres:10.12
-         * stage('Scan postgres image for fixable issues') {
-         *   steps {
-         *     scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/postgres:${TAG}", "HIGH", false)
-         *   }
-         * }
-         */
+        stage('Scan postgres image for fixable issues') {
+          steps {
+            scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/postgres:${TAG}", "HIGH", false)
+          }
+        }
         stage('Scan postgres image for all issues') {
           steps {
             scanAndReport("gcr.io/conjur-cloud-launcher-onboard/cyberark/postgres:${TAG}", "NONE", true)
