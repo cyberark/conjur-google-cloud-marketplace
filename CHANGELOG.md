@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 [PR #44](https://github.com/cyberark/conjur-google-cloud-marketplace/pull/44)
 - The README.md is updated and more detailed instructions have been added.
 [PR #44](https://github.com/cyberark/conjur-google-cloud-marketplace/pull/44)
+- Upgraded internal Postgres database from EOL version 9.4 to version 10, which
+  is actively supported. [PR #69](https://github.com/cyberark/conjur-google-cloud-marketplace/pull/69)
 
 ### Fixed
 - Project deployment tools are updated to enable deploying on Kubernetes v1.15+
